@@ -1,16 +1,19 @@
-import mongoose from "mongoose";
+import mongoose, { Schema, models } from "mongoose";
 
-const ReservationSchema = new mongoose.Schema(
+const ReservationSchema = new Schema(
   {
     name: String,
     phone: String,
-    date: String,
-    time: String,
+    date: String, // YYYY-MM-DD
+    time: String, // HH:mm
     guests: Number,
-    confirmed: { type: Boolean, default: false },
+    status: {
+      type: String,
+      default: "pending",
+    },
   },
   { timestamps: true }
 );
 
-export default mongoose.models.Reservation ||
+export default models.Reservation ||
   mongoose.model("Reservation", ReservationSchema);
