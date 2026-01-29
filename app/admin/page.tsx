@@ -25,17 +25,13 @@ type SlotAnalytics = {
 /* ================= COMPONENT ================= */
 
 export default function AdminPage() {
-  /* 🔐 AUTH */
   const [password, setPassword] = useState("");
   const [authorized, setAuthorized] = useState(false);
   const [error, setError] = useState("");
 
-  /* 📊 DATA */
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [slots, setSlots] = useState<SlotAnalytics[]>([]);
   const [loading, setLoading] = useState(false);
-
-  /* ================= AUTH ================= */
 
   function handleLogin() {
     if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
@@ -45,8 +41,6 @@ export default function AdminPage() {
       setError("Wrong password");
     }
   }
-
-  /* ================= LOADERS ================= */
 
   async function loadReservations() {
     const res = await fetch("/api/reservations");
@@ -67,13 +61,9 @@ export default function AdminPage() {
     }
   }, [authorized]);
 
-  /* ================= HELPERS ================= */
-
   function getSlot(date: string, time: string) {
     return slots.find((s) => s.date === date && s.time === time);
   }
-
-  /* ================= ACTIONS ================= */
 
   async function confirmReservation(r: Reservation) {
     await fetch("/api/reservations", {
@@ -100,8 +90,6 @@ export default function AdminPage() {
     loadAnalytics();
   }
 
-  /* ================= WHATSAPP ================= */
-
   function sendWhatsAppConfirmation(r: Reservation) {
     const number = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "";
 
@@ -114,8 +102,6 @@ Hello ${r.name},
 ⏰ ${r.time}
 👥 Guests: ${r.guests}
 
-📍 Dharmanagar, Tripura
-
 We look forward to serving you 🌆🍽️
 `.trim();
 
@@ -125,16 +111,13 @@ We look forward to serving you 🌆🍽️
     );
   }
 
-  /* ================= LOGIN ================= */
-
   if (!authorized) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-zinc-900 to-black">
-        <div className="bg-zinc-900/80 backdrop-blur p-8 rounded-2xl w-full max-w-sm shadow-2xl">
+      <main className="min-h-screen flex items-center justify-center bg-black">
+        <div className="bg-zinc-900 p-8 rounded-2xl w-full max-w-sm">
           <h1 className="text-2xl text-center mb-6 text-[var(--primary)]">
             Admin Access
           </h1>
-
           <input
             type="password"
             placeholder="Admin Password"
@@ -142,153 +125,118 @@ We look forward to serving you 🌆🍽️
             onChange={(e) => setPassword(e.target.value)}
             className="w-full p-3 mb-4 rounded bg-black border border-zinc-700"
           />
-
           <button
             onClick={handleLogin}
-            className="w-full bg-[var(--primary)] text-black py-3 rounded font-semibold hover:opacity-90"
+            className="w-full bg-[var(--primary)] text-black py-3 rounded font-semibold"
           >
             Login
           </button>
-
-          {error && (
-            <p className="text-red-400 text-center mt-4">{error}</p>
-          )}
+          {error && <p className="text-red-400 mt-4 text-center">{error}</p>}
         </div>
       </main>
     );
   }
 
-  /* ================= DASHBOARD ================= */
-
-  const totalSlots = slots.length;
-  const fullSlots = slots.filter((s) => s.full).length;
-  const availableSlots = totalSlots - fullSlots;
+  const confirmed = reservations.filter((r) => r.status === "confirmed");
+  const pending = reservations.filter((r) => r.status === "pending");
 
   return (
-    <main className="min-h-screen p-8 bg-gradient-to-br from-black via-zinc-900 to-black text-white">
-      <h1 className="text-4xl font-semibold mb-10 text-[var(--primary)]">
+    <main className="min-h-screen p-8 bg-black text-white">
+      <h1 className="text-4xl mb-10 text-[var(--primary)]">
         L4 Admin Dashboard
       </h1>
 
-      {/* KPI */}
-      <section className="grid md:grid-cols-3 gap-6 mb-12">
-        <KpiCard title="Total Slots" value={totalSlots} />
-        <KpiCard title="Available Slots" value={availableSlots} green />
-        <KpiCard title="Full Slots" value={fullSlots} red />
-      </section>
-
-      {/* RESERVATIONS */}
-      <section>
-        <h2 className="text-2xl mb-6 text-[var(--primary)]">
-          Reservations
+      {/* 🟢 AUTO-CONFIRMED */}
+      <section className="mb-14">
+        <h2 className="text-2xl mb-4 text-green-400">
+          🟢 Auto-Confirmed Reservations
         </h2>
 
-        <div className="overflow-x-auto">
-          <table className="w-full border border-zinc-700 rounded-xl overflow-hidden">
-            <thead className="bg-zinc-900">
-              <tr>
-                {["Name", "Date", "Time", "Guests", "Status", "Actions"].map(
-                  (h) => (
+        {confirmed.length === 0 ? (
+          <p className="text-zinc-400">No auto-confirmed reservations.</p>
+        ) : (
+          <div className="grid md:grid-cols-2 gap-4">
+            {confirmed.map((r) => (
+              <div
+                key={r._id}
+                className="border border-green-600 bg-green-900/20 p-5 rounded-xl"
+              >
+                <p className="font-medium">{r.name}</p>
+                <p className="text-sm text-zinc-300">
+                  {r.date} • {r.time} • {r.guests} guests
+                </p>
+
+                <button
+                  onClick={() => deleteReservation(r._id)}
+                  className="mt-3 text-sm text-red-400 hover:underline"
+                >
+                  Delete
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* 🟡 PENDING */}
+      <section>
+        <h2 className="text-2xl mb-4 text-yellow-400">
+          🟡 Pending Review
+        </h2>
+
+        {pending.length === 0 ? (
+          <p className="text-zinc-400">No pending reservations.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full border border-zinc-700 rounded-xl">
+              <thead className="bg-zinc-900">
+                <tr>
+                  {["Name", "Date", "Time", "Guests", "Actions"].map((h) => (
                     <th key={h} className="p-4 border">
                       {h}
                     </th>
-                  )
-                )}
-              </tr>
-            </thead>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {pending.map((r) => {
+                  const slot = getSlot(r.date, r.time);
+                  const canConfirm =
+                    slot && !slot.full && slot.remaining >= r.guests;
 
-            <tbody>
-              {reservations.map((r) => {
-                const slot = getSlot(r.date, r.time);
-                const canConfirm =
-                  r.status === "pending" &&
-                  slot &&
-                  !slot.full &&
-                  slot.remaining >= r.guests;
-
-                return (
-                  <tr key={r._id} className="text-center">
-                    <td className="p-3 border">{r.name}</td>
-                    <td className="p-3 border">{r.date}</td>
-                    <td className="p-3 border">{r.time}</td>
-                    <td className="p-3 border">{r.guests}</td>
-
-                    {/* STATUS BADGE */}
-                    <td className="p-3 border">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          r.status === "confirmed"
-                            ? "bg-green-500/20 text-green-400"
-                            : "bg-yellow-500/20 text-yellow-400"
-                        }`}
-                      >
-                        {r.status === "confirmed"
-                          ? "Auto-Confirmed"
-                          : "Pending Review"}
-                      </span>
-                    </td>
-
-                    {/* ACTIONS */}
-                    <td className="p-3 border space-x-2">
-                      {r.status === "pending" && (
+                  return (
+                    <tr key={r._id} className="text-center">
+                      <td className="p-3 border">{r.name}</td>
+                      <td className="p-3 border">{r.date}</td>
+                      <td className="p-3 border">{r.time}</td>
+                      <td className="p-3 border">{r.guests}</td>
+                      <td className="p-3 border space-x-2">
                         <button
                           disabled={!canConfirm}
                           onClick={() => confirmReservation(r)}
                           className={`px-3 py-1 rounded text-sm ${
                             canConfirm
                               ? "bg-green-600 hover:bg-green-700"
-                              : "bg-zinc-700 cursor-not-allowed opacity-50"
+                              : "bg-zinc-700 opacity-50 cursor-not-allowed"
                           }`}
                         >
                           Confirm
                         </button>
-                      )}
-
-                      <button
-                        onClick={() => deleteReservation(r._id)}
-                        className="bg-red-600 px-3 py-1 rounded text-sm hover:bg-red-700"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                        <button
+                          onClick={() => deleteReservation(r._id)}
+                          className="bg-red-600 px-3 py-1 rounded text-sm hover:bg-red-700"
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </section>
     </main>
-  );
-}
-
-/* ================= UI ================= */
-
-function KpiCard({
-  title,
-  value,
-  green,
-  red,
-}: {
-  title: string;
-  value: number;
-  green?: boolean;
-  red?: boolean;
-}) {
-  return (
-    <div
-      className={`p-6 rounded-xl shadow border ${
-        green
-          ? "border-green-600 bg-green-900/20"
-          : red
-          ? "border-red-600 bg-red-900/20"
-          : "border-zinc-700 bg-zinc-900/40"
-      }`}
-    >
-      <p className="text-sm uppercase tracking-wide text-zinc-400">
-        {title}
-      </p>
-      <p className="text-3xl font-semibold mt-2">{value}</p>
-    </div>
   );
 }
