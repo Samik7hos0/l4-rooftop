@@ -11,7 +11,7 @@ type Reservation = {
   date: string;
   time: string;
   guests: number;
-  confirmed: boolean;
+  status: "confirmed" | "pending";
 };
 
 type SlotAnalytics = {
@@ -117,7 +117,7 @@ Hello ${r.name},
 📍 Dharmanagar, Tripura
 
 We look forward to serving you 🌆🍽️
-`;
+`.trim();
 
     window.open(
       `https://wa.me/${number}?text=${encodeURIComponent(message)}`,
@@ -170,43 +170,14 @@ We look forward to serving you 🌆🍽️
         L4 Admin Dashboard
       </h1>
 
-      {/* ================= KPI CARDS ================= */}
+      {/* KPI */}
       <section className="grid md:grid-cols-3 gap-6 mb-12">
         <KpiCard title="Total Slots" value={totalSlots} />
         <KpiCard title="Available Slots" value={availableSlots} green />
         <KpiCard title="Full Slots" value={fullSlots} red />
       </section>
 
-      {/* ================= SLOT ANALYTICS ================= */}
-      <section className="mb-14">
-        <h2 className="text-2xl mb-6 text-[var(--primary)]">
-          Slot Availability
-        </h2>
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {slots.map((s, i) => (
-            <div
-              key={i}
-              className={`p-5 rounded-xl border shadow ${
-                s.full
-                  ? "border-red-600 bg-red-900/20"
-                  : "border-green-600 bg-green-900/20"
-              }`}
-            >
-              <p className="text-lg font-medium">
-                {s.date} • {s.time}
-              </p>
-              <p className="mt-2">👥 Booked: {s.booked}</p>
-              <p>🪑 Remaining: {s.remaining}</p>
-              <p className="mt-2 font-semibold">
-                {s.full ? "🔴 FULL" : "🟢 AVAILABLE"}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ================= RESERVATIONS ================= */}
+      {/* RESERVATIONS */}
       <section>
         <h2 className="text-2xl mb-6 text-[var(--primary)]">
           Reservations
@@ -230,7 +201,10 @@ We look forward to serving you 🌆🍽️
               {reservations.map((r) => {
                 const slot = getSlot(r.date, r.time);
                 const canConfirm =
-                  slot && !slot.full && slot.remaining >= r.guests;
+                  r.status === "pending" &&
+                  slot &&
+                  !slot.full &&
+                  slot.remaining >= r.guests;
 
                 return (
                   <tr key={r._id} className="text-center">
@@ -238,11 +212,25 @@ We look forward to serving you 🌆🍽️
                     <td className="p-3 border">{r.date}</td>
                     <td className="p-3 border">{r.time}</td>
                     <td className="p-3 border">{r.guests}</td>
+
+                    {/* STATUS BADGE */}
                     <td className="p-3 border">
-                      {r.confirmed ? "✅ Confirmed" : "⏳ Pending"}
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-medium ${
+                          r.status === "confirmed"
+                            ? "bg-green-500/20 text-green-400"
+                            : "bg-yellow-500/20 text-yellow-400"
+                        }`}
+                      >
+                        {r.status === "confirmed"
+                          ? "Auto-Confirmed"
+                          : "Pending Review"}
+                      </span>
                     </td>
+
+                    {/* ACTIONS */}
                     <td className="p-3 border space-x-2">
-                      {!r.confirmed && (
+                      {r.status === "pending" && (
                         <button
                           disabled={!canConfirm}
                           onClick={() => confirmReservation(r)}
@@ -274,7 +262,7 @@ We look forward to serving you 🌆🍽️
   );
 }
 
-/* ================= UI COMPONENT ================= */
+/* ================= UI ================= */
 
 function KpiCard({
   title,
