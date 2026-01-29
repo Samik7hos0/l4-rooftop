@@ -34,15 +34,15 @@ export default function GoogleReviews() {
         <div className="grid md:grid-cols-3 gap-6 text-left mb-10">
           {[
             {
-              name: "Amit S.",
+              name: "Amit Sarkar",
               text: "Amazing rooftop ambience and delicious food. Perfect place for evenings.",
             },
             {
-              name: "Riya D.",
+              name: "Riya Das",
               text: "Loved the vibe and service. One of the best rooftop restaurants here.",
             },
             {
-              name: "Rahul M.",
+              name: "Rahul Maity",
               text: "Great view, great food, great experience. Highly recommended!",
             },
           ].map((review) => (
