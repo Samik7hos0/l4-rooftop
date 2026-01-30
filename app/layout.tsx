@@ -1,6 +1,7 @@
 import "./globals.css";
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import WhatsAppButton from "@/components/WhatsAppButton";
+import CallButton from "@/components/CallButton";
 
 export default function RootLayout({
   children,
@@ -8,11 +9,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body>
+    <html lang="en">
+      <body className="bg-neutral-950 text-neutral-100">
         <Navbar />
         {children}
-        <Footer />
+
+        {/* MUST be last */}
+        <WhatsAppButton />
+        <CallButton />
       </body>
     </html>
   );

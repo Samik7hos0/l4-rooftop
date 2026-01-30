@@ -1,16 +1,15 @@
-import ReservationForm from "@/components/ReservationForm";
+import GoogleReviews from "@/components/GoogleReviews";
+import MapSection from "@/components/MapSection";
 
 export default function ReservationPage() {
   return (
-    <main className="container py-24 max-w-3xl">
-      <h1 className="text-4xl font-semibold mb-6">
-        Reserve a Table
-      </h1>
-      <p className="text-zinc-600 mb-12">
-        Book your rooftop dining experience with real-time availability.
-      </p>
+    <>
+      <main className="min-h-screen flex items-center justify-center">
+        <h1>Reservation Page OK</h1>
+      </main>
 
-      <ReservationForm />
-    </main>
+      <GoogleReviews />
+      <MapSection />
+    </>
   );
 }
