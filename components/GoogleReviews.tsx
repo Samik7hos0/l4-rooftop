@@ -1,14 +1,6 @@
 "use client";
 
 export default function GoogleReviews() {
-  const rating = process.env.NEXT_PUBLIC_GOOGLE_RATING;
-  const count = process.env.NEXT_PUBLIC_GOOGLE_REVIEW_COUNT;
-  const reviewURL = process.env.NEXT_PUBLIC_GOOGLE_REVIEW_URL;
-
-  if (!rating || !count || !reviewURL) return null;
-
-  const roundedRating = Math.round(Number(rating));
-
   return (
     <section className="max-w-6xl mx-auto px-6 py-20">
       <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-10 text-center">
