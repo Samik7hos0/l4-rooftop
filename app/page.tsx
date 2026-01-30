@@ -1,77 +1,64 @@
-import Hero from "@/components/Hero";
-import StructuredData from "@/components/StructuredData";
-import GoogleReviews from "@/components/GoogleReviews";
+import Link from "next/link";
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <>
-      {/* SEO Structured Data */}
-      <StructuredData />
+    <main>
+      {/* HERO */}
+      <section className="max-w-6xl mx-auto px-6 min-h-[80vh] grid md:grid-cols-2 gap-16 items-center">
+        <div>
+          <p className="text-sm tracking-widest text-zinc-500 mb-4">
+            ROOFTOP DINING • DHARMANAGAR
+          </p>
 
-      <main>
-        {/* HERO SECTION */}
-        <Hero />
+          <h1 className="text-4xl md:text-6xl font-semibold leading-tight mb-6">
+            Level Four <br /> Rooftop Restaurant
+          </h1>
 
-        {/* TRUST SIGNALS */}
-        <section className="max-w-6xl mx-auto px-6 py-20 grid md:grid-cols-3 gap-8">
-          {[
-            {
-              title: "🌆 Rooftop Ambience",
-              desc: "Open-sky seating with city views and a premium evening vibe.",
-            },
-            {
-              title: "🪑 Limited Seating",
-              desc: "Controlled capacity for comfort, privacy, and exclusivity.",
-            },
-            {
-              title: "📍 Prime Location",
-              desc: "Located at Power House Quarter Complex, Dharmanagar.",
-            },
-          ].map((item) => (
-            <div
-              key={item.title}
-              className="bg-zinc-900/40 border border-zinc-800 p-6 rounded-xl"
-            >
-              <h3 className="text-xl mb-2 text-[var(--primary)]">
-                {item.title}
-              </h3>
-              <p className="text-zinc-400">{item.desc}</p>
-            </div>
-          ))}
-        </section>
+          <p className="text-zinc-600 max-w-md mb-10">
+            A premium rooftop experience with curated cuisine, city lights,
+            and unforgettable evenings under the open sky.
+          </p>
 
-        {/* WHY L4 */}
-        <section className="bg-zinc-900/40 py-20">
-          <div className="max-w-5xl mx-auto px-6 text-center">
-            <h2 className="text-4xl mb-6 text-[var(--primary)]">
-              Why Choose L4?
-            </h2>
-
-            <p className="text-zinc-300 mb-12">
-              Designed for dates, celebrations, and relaxed evenings —
-              L4 blends taste, ambience, and service into one elevated experience.
-            </p>
-
-            <div className="grid md:grid-cols-3 gap-8">
-              {[
-                "Curated multi-cuisine menu",
-                "Rooftop dining under the open sky",
-                "Professional table management",
-              ].map((text) => (
-                <div
-                  key={text}
-                  className="border border-zinc-800 p-6 rounded-xl"
-                >
-                  <p className="text-zinc-300">{text}</p>
-                </div>
-              ))}
-            </div>
+          <div className="flex gap-4">
+            <Link href="/reservation" className="btn-primary">
+              Reserve a Table
+            </Link>
+            <Link href="/menu" className="btn-outline">
+              Explore Menu
+            </Link>
           </div>
-        </section>
+        </div>
 
-        {/* GOOGLE REVIEWS SECTION */}
-        <GoogleReviews />
-      </main>
-    </>
+        {/* Visual placeholder */}
+        <div className="aspect-[4/5] rounded-3xl bg-zinc-200 flex items-center justify-center text-zinc-500">
+          Ambience / Food Image
+        </div>
+      </section>
+
+      {/* FEATURES */}
+      <section className="max-w-6xl mx-auto px-6 py-24 grid md:grid-cols-3 gap-12 text-center">
+        <Feature
+          title="Rooftop Ambience"
+          desc="Open-sky seating with city views and refined evening vibes."
+        />
+        <Feature
+          title="Limited Seating"
+          desc="Curated capacity for comfort, privacy, and exclusivity."
+        />
+        <Feature
+          title="Prime Location"
+          desc="Power House Quarter Complex, Dharmanagar."
+        />
+      </section>
+    </main>
+  );
+}
+
+function Feature({ title, desc }: { title: string; desc: string }) {
+  return (
+    <div>
+      <h3 className="text-xl font-medium mb-3">{title}</h3>
+      <p className="text-zinc-600 text-sm">{desc}</p>
+    </div>
   );
 }
