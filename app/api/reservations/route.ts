@@ -8,8 +8,7 @@ export async function POST(req: Request) {
   try {
     await connectDB();
 
-    const body = await req.json();
-    const { name, phone, date, time, guests } = body;
+    const { name, phone, date, time, guests } = await req.json();
 
     if (!name || !phone || !date || !time || !guests) {
       return NextResponse.json(
@@ -18,8 +17,7 @@ export async function POST(req: Request) {
       );
     }
 
-    /* ================= SLOT CAPACITY CHECK ================= */
-
+    // SLOT CAPACITY CHECK
     const existing = await Reservation.find({ date, time });
     const totalGuests = existing.reduce(
       (sum: number, r: any) => sum + r.guests,
@@ -33,18 +31,13 @@ export async function POST(req: Request) {
       );
     }
 
-    /* ================= IST-SAFE WEEKDAY CHECK ================= */
-
-    // IMPORTANT: DO NOT use new Date(date)
-    // Force LOCAL (Asia/Kolkata) date parsing
+    // IST-SAFE WEEKDAY CHECK
     const [year, month, dayNum] = date.split("-").map(Number);
     const bookingDate = new Date(year, month - 1, dayNum);
-    const weekday = bookingDate.getDay(); // 0 = Sunday
+    const weekday = bookingDate.getDay(); // 0 = Sun
 
     const isWeekday = weekday >= 1 && weekday <= 4; // Mon–Thu
     const autoConfirm = guests <= 4 && isWeekday;
-
-    /* ================= CREATE RESERVATION ================= */
 
     const reservation = await Reservation.create({
       name,
@@ -59,8 +52,8 @@ export async function POST(req: Request) {
       success: true,
       status: reservation.status,
     });
-  } catch (error) {
-    console.error("Reservation error:", error);
+  } catch (err) {
+    console.error(err);
     return NextResponse.json(
       { error: "Something went wrong" },
       { status: 500 }

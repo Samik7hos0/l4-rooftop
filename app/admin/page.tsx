@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react";
 
-/* ================= TYPES ================= */
-
 type Reservation = {
   _id: string;
   name: string;
@@ -22,8 +20,6 @@ type SlotAnalytics = {
   full: boolean;
 };
 
-/* ================= COMPONENT ================= */
-
 export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [authorized, setAuthorized] = useState(false);
@@ -31,7 +27,6 @@ export default function AdminPage() {
 
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [slots, setSlots] = useState<SlotAnalytics[]>([]);
-  const [loading, setLoading] = useState(false);
 
   function handleLogin() {
     if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
@@ -54,10 +49,8 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (authorized) {
-      setLoading(true);
-      Promise.all([loadReservations(), loadAnalytics()]).finally(() =>
-        setLoading(false)
-      );
+      loadReservations();
+      loadAnalytics();
     }
   }, [authorized]);
 
@@ -72,7 +65,6 @@ export default function AdminPage() {
       body: JSON.stringify({ id: r._id }),
     });
 
-    sendWhatsAppConfirmation(r);
     loadReservations();
     loadAnalytics();
   }
@@ -90,48 +82,32 @@ export default function AdminPage() {
     loadAnalytics();
   }
 
-  function sendWhatsAppConfirmation(r: Reservation) {
-    const number = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "";
-
-    const message = `
-Hello ${r.name},
-
-✅ Your table at *L4 – Level Four Rooftop Restaurant* is confirmed.
-
-📅 ${r.date}
-⏰ ${r.time}
-👥 Guests: ${r.guests}
-
-We look forward to serving you 🌆🍽️
-`.trim();
-
-    window.open(
-      `https://wa.me/${number}?text=${encodeURIComponent(message)}`,
-      "_blank"
-    );
-  }
-
   if (!authorized) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-black">
-        <div className="bg-zinc-900 p-8 rounded-2xl w-full max-w-sm">
-          <h1 className="text-2xl text-center mb-6 text-[var(--primary)]">
-            Admin Access
+        <div className="bg-zinc-900 p-8 rounded-xl w-full max-w-sm">
+          <h1 className="text-xl mb-4 text-center text-[var(--primary)]">
+            Admin Login
           </h1>
+
           <input
             type="password"
             placeholder="Admin Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-3 mb-4 rounded bg-black border border-zinc-700"
+            className="w-full p-3 mb-4 bg-black border border-zinc-700 rounded"
           />
+
           <button
             onClick={handleLogin}
-            className="w-full bg-[var(--primary)] text-black py-3 rounded font-semibold"
+            className="w-full bg-[var(--primary)] text-black py-2 rounded"
           >
             Login
           </button>
-          {error && <p className="text-red-400 mt-4 text-center">{error}</p>}
+
+          {error && (
+            <p className="text-red-400 mt-4 text-center">{error}</p>
+          )}
         </div>
       </main>
     );
@@ -142,100 +118,73 @@ We look forward to serving you 🌆🍽️
 
   return (
     <main className="min-h-screen p-8 bg-black text-white">
-      <h1 className="text-4xl mb-10 text-[var(--primary)]">
+      <h1 className="text-3xl mb-8 text-[var(--primary)]">
         L4 Admin Dashboard
       </h1>
 
-      {/* 🟢 AUTO-CONFIRMED */}
-      <section className="mb-14">
-        <h2 className="text-2xl mb-4 text-green-400">
+      {/* AUTO-CONFIRMED */}
+      <section className="mb-10">
+        <h2 className="text-xl text-green-400 mb-3">
           🟢 Auto-Confirmed Reservations
         </h2>
 
         {confirmed.length === 0 ? (
-          <p className="text-zinc-400">No auto-confirmed reservations.</p>
+          <p className="text-zinc-400">None</p>
         ) : (
-          <div className="grid md:grid-cols-2 gap-4">
-            {confirmed.map((r) => (
-              <div
-                key={r._id}
-                className="border border-green-600 bg-green-900/20 p-5 rounded-xl"
-              >
-                <p className="font-medium">{r.name}</p>
-                <p className="text-sm text-zinc-300">
-                  {r.date} • {r.time} • {r.guests} guests
-                </p>
+          confirmed.map((r) => (
+            <div
+              key={r._id}
+              className="border border-green-600 bg-green-900/20 p-4 rounded mb-2"
+            >
+              {r.name} • {r.date} • {r.time} • {r.guests} guests
+            </div>
+          ))
+        )}
+      </section>
+
+      {/* PENDING */}
+      <section>
+        <h2 className="text-xl text-yellow-400 mb-3">
+          🟡 Pending Review
+        </h2>
+
+        {pending.map((r) => {
+          const slot = getSlot(r.date, r.time);
+          const canConfirm =
+            slot && !slot.full && slot.remaining >= r.guests;
+
+          return (
+            <div
+              key={r._id}
+              className="border border-zinc-700 p-4 rounded mb-2 flex justify-between"
+            >
+              <span>
+                {r.name} • {r.date} • {r.time} • {r.guests}
+              </span>
+
+              <div className="space-x-2">
+                <button
+                  disabled={!canConfirm}
+                  onClick={() => confirmReservation(r)}
+                  className={`px-3 py-1 rounded ${
+                    canConfirm
+                      ? "bg-green-600"
+                      : "bg-zinc-700 cursor-not-allowed"
+                  }`}
+                >
+                  Confirm
+                </button>
 
                 <button
                   onClick={() => deleteReservation(r._id)}
-                  className="mt-3 text-sm text-red-400 hover:underline"
+                  className="bg-red-600 px-3 py-1 rounded"
                 >
                   Delete
                 </button>
               </div>
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* 🟡 PENDING */}
-      <section>
-        <h2 className="text-2xl mb-4 text-yellow-400">
-          🟡 Pending Review
-        </h2>
-
-        {pending.length === 0 ? (
-          <p className="text-zinc-400">No pending reservations.</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full border border-zinc-700 rounded-xl">
-              <thead className="bg-zinc-900">
-                <tr>
-                  {["Name", "Date", "Time", "Guests", "Actions"].map((h) => (
-                    <th key={h} className="p-4 border">
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {pending.map((r) => {
-                  const slot = getSlot(r.date, r.time);
-                  const canConfirm =
-                    slot && !slot.full && slot.remaining >= r.guests;
-
-                  return (
-                    <tr key={r._id} className="text-center">
-                      <td className="p-3 border">{r.name}</td>
-                      <td className="p-3 border">{r.date}</td>
-                      <td className="p-3 border">{r.time}</td>
-                      <td className="p-3 border">{r.guests}</td>
-                      <td className="p-3 border space-x-2">
-                        <button
-                          disabled={!canConfirm}
-                          onClick={() => confirmReservation(r)}
-                          className={`px-3 py-1 rounded text-sm ${
-                            canConfirm
-                              ? "bg-green-600 hover:bg-green-700"
-                              : "bg-zinc-700 opacity-50 cursor-not-allowed"
-                          }`}
-                        >
-                          Confirm
-                        </button>
-                        <button
-                          onClick={() => deleteReservation(r._id)}
-                          className="bg-red-600 px-3 py-1 rounded text-sm hover:bg-red-700"
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
+            </div>
+          );
+        })}
       </section>
     </main>
   );
