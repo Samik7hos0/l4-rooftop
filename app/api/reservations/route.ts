@@ -4,10 +4,17 @@ import Reservation from "@/models/Reservation";
 
 const SLOT_CAPACITY = 20;
 
+/* ================= GET (ADMIN LOAD) ================= */
+export async function GET() {
+  await connectDB();
+  const reservations = await Reservation.find().sort({ createdAt: -1 });
+  return NextResponse.json(reservations);
+}
+
+/* ================= POST (NEW BOOKING) ================= */
 export async function POST(req: Request) {
   try {
     await connectDB();
-
     const { name, phone, date, time, guests } = await req.json();
 
     if (!name || !phone || !date || !time || !guests) {
@@ -17,7 +24,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // SLOT CAPACITY CHECK
+    // SLOT CAPACITY
     const existing = await Reservation.find({ date, time });
     const totalGuests = existing.reduce(
       (sum: number, r: any) => sum + r.guests,
@@ -26,12 +33,12 @@ export async function POST(req: Request) {
 
     if (totalGuests + guests > SLOT_CAPACITY) {
       return NextResponse.json(
-        { error: "Selected time slot is full" },
+        { error: "Slot is full" },
         { status: 409 }
       );
     }
 
-    // IST-SAFE WEEKDAY CHECK
+    // IST-SAFE DATE CHECK
     const [year, month, dayNum] = date.split("-").map(Number);
     const bookingDate = new Date(year, month - 1, dayNum);
     const weekday = bookingDate.getDay(); // 0 = Sun
@@ -53,10 +60,30 @@ export async function POST(req: Request) {
       status: reservation.status,
     });
   } catch (err) {
-    console.error(err);
     return NextResponse.json(
-      { error: "Something went wrong" },
+      { error: "Reservation failed" },
       { status: 500 }
     );
   }
+}
+
+/* ================= PATCH (ADMIN CONFIRM) ================= */
+export async function PATCH(req: Request) {
+  await connectDB();
+  const { id } = await req.json();
+
+  await Reservation.findByIdAndUpdate(id, {
+    status: "confirmed",
+  });
+
+  return NextResponse.json({ success: true });
+}
+
+/* ================= DELETE (ADMIN DELETE) ================= */
+export async function DELETE(req: Request) {
+  await connectDB();
+  const { id } = await req.json();
+
+  await Reservation.findByIdAndDelete(id);
+  return NextResponse.json({ success: true });
 }

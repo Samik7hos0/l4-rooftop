@@ -1,15 +1,40 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+
+type FormState = {
+  name: string;
+  phone: string;
+  date: string;
+  time: string;
+  guests: number;
+};
+
+const OPENING_TIME = 17; // 5 PM
+const CLOSING_TIME = 23; // 11 PM (restaurant closed after this)
+const SLOT_INTERVAL = 30; // minutes
+
+function generateTimeSlots() {
+  const slots: string[] = [];
+
+  for (let hour = OPENING_TIME; hour < CLOSING_TIME; hour++) {
+    for (let min = 0; min < 60; min += SLOT_INTERVAL) {
+      // Prevent slots at or after 11:00 PM
+      if (hour === CLOSING_TIME - 1 && min > 30) continue;
+
+      const h = hour.toString().padStart(2, "0");
+      const m = min.toString().padStart(2, "0");
+      slots.push(`${h}:${m}`);
+    }
+  }
+
+  return slots;
+}
+
+const TIME_SLOTS = generateTimeSlots();
 
 export default function ReservationForm() {
-  const router = useRouter();
-
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<FormState>({
     name: "",
     phone: "",
     date: "",
@@ -17,16 +42,13 @@ export default function ReservationForm() {
     guests: 2,
   });
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
     setError("");
+    setLoading(true);
 
     try {
       const res = await fetch("/api/reservations", {
@@ -35,98 +57,97 @@ export default function ReservationForm() {
         body: JSON.stringify(form),
       });
 
-      if (!res.ok) throw new Error("Failed");
+      if (res.ok) {
+        const params = new URLSearchParams({
+          name: form.name,
+          date: form.date,
+          time: form.time,
+          guests: String(form.guests),
+        });
 
-      // ✅ NEXT.JS SAFE REDIRECT (IMPORTANT)
-      const params = new URLSearchParams({
-        name: form.name,
-        date: form.date,
-        time: form.time,
-        guests: String(form.guests),
-      });
+        window.location.href = `/reservation-success?${params.toString()}`;
+        return;
+      }
 
-      router.push(`/reservation-success?${params.toString()}`);
-      return;
+      const data = await res.json();
+      setError(data.error || "Reservation failed.");
     } catch {
-      setError(
-        "This slot may have just filled up. Please try another time."
-      );
+      setError("Something went wrong. Try again.");
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-8 w-full"
+      className="bg-zinc-900/80 backdrop-blur p-8 rounded-2xl max-w-md mx-auto shadow-2xl"
     >
-      <h2 className="text-2xl mb-6 text-[var(--primary)]">
-        Book a Table
+      <h2 className="text-2xl text-center mb-6 text-[var(--primary)]">
+        Reserve a Table
       </h2>
 
       <input
-        name="name"
+        required
         placeholder="Your Name"
-        required
+        className="input"
         value={form.name}
-        onChange={handleChange}
-        className="w-full mb-4 bg-black border border-zinc-700 rounded-lg px-4 py-3"
+        onChange={(e) => setForm({ ...form, name: e.target.value })}
       />
 
       <input
-        name="phone"
+        required
         placeholder="Phone Number"
-        required
+        className="input"
         value={form.phone}
-        onChange={handleChange}
-        className="w-full mb-4 bg-black border border-zinc-700 rounded-lg px-4 py-3"
+        onChange={(e) => setForm({ ...form, phone: e.target.value })}
       />
 
       <input
+        required
         type="date"
-        name="date"
-        required
-        min={new Date().toISOString().split("T")[0]}
+        className="input"
         value={form.date}
-        onChange={handleChange}
-        className="w-full mb-4 bg-black border border-zinc-700 rounded-lg px-4 py-3"
+        onChange={(e) => setForm({ ...form, date: e.target.value })}
       />
 
-      <input
-        type="time"
-        name="time"
-        required
-        value={form.time}
-        onChange={handleChange}
-        className="w-full mb-4 bg-black border border-zinc-700 rounded-lg px-4 py-3"
-      />
-
+      {/* ⏰ TIME SLOT SELECTOR */}
       <select
-        name="guests"
-        value={form.guests}
-        onChange={handleChange}
-        className="w-full mb-6 bg-black border border-zinc-700 rounded-lg px-4 py-3"
+        required
+        className="input"
+        value={form.time}
+        onChange={(e) => setForm({ ...form, time: e.target.value })}
       >
-        {[1,2,3,4,5,6,7,8].map(n => (
-          <option key={n} value={n}>{n} Guests</option>
+        <option value="">Select Time</option>
+        {TIME_SLOTS.map((t) => (
+          <option key={t} value={t}>
+            {t}
+          </option>
         ))}
       </select>
 
-      {error && (
-        <p className="text-red-400 text-sm mb-4">{error}</p>
-      )}
+      <input
+        required
+        type="number"
+        min={1}
+        max={20}
+        className="input"
+        value={form.guests}
+        onChange={(e) =>
+          setForm({ ...form, guests: Number(e.target.value) })
+        }
+      />
 
       <button
         disabled={loading}
-        className="w-full bg-[var(--primary)] text-black py-3 rounded-lg font-semibold"
+        className="w-full mt-4 bg-[var(--primary)] text-black py-3 rounded font-semibold hover:opacity-90"
       >
-        {loading ? "Booking..." : "Confirm Reservation"}
+        {loading ? "Submitting..." : "Confirm Reservation"}
       </button>
 
-      <p className="text-xs text-zinc-400 mt-4 text-center">
-        Admin verified • WhatsApp confirmation
-      </p>
+      {error && (
+        <p className="text-red-400 text-center mt-4">{error}</p>
+      )}
     </form>
   );
 }
