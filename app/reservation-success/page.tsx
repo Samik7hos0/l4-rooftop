@@ -1,57 +1,89 @@
-export const metadata = {
-  title: "Reservation Received",
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+
+type ReservationData = {
+  name: string;
+  phone: string;
+  date: string;
+  time: string;
+  guests: number;
+  note?: string;
 };
 
-interface SearchParams {
-  name?: string;
-  date?: string;
-  time?: string;
-  guests?: string;
-}
+export default function ReservationSuccessPage() {
+  const [reservation, setReservation] = useState<ReservationData | null>(null);
 
-export default async function ReservationSuccessPage({
-  searchParams,
-}: {
-  searchParams: Promise<SearchParams>;
-}) {
-  // ✅ REQUIRED IN NEXT.JS 15
-  const params = await searchParams;
+  useEffect(() => {
+    const stored = sessionStorage.getItem("reservation");
+
+    if (stored) {
+      try {
+        setReservation(JSON.parse(stored));
+      } catch {
+        setReservation(null);
+      }
+    }
+  }, []);
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-6">
-      <div className="max-w-lg w-full bg-zinc-900/60 border border-zinc-800 rounded-2xl p-8 text-center">
-        <h1 className="text-3xl font-semibold text-[var(--primary)] mb-4">
+    <main className="min-h-screen flex items-center justify-center px-6 py-20">
+      <div className="w-full max-w-md bg-neutral-900 border border-neutral-800 rounded-2xl p-8 space-y-6 text-center">
+        <h1 className="text-2xl font-semibold">
           🎉 Reservation Received
         </h1>
 
-        <p className="text-zinc-300 mb-6">
-          Thank you{" "}
-          <strong>{params.name ?? "Guest"}</strong>!
+        <p className="text-neutral-400 text-sm">
+          Thank you for choosing <span className="font-medium text-white">L4 Rooftop</span>.
         </p>
 
-        <div className="bg-black/40 rounded-xl p-4 text-left text-sm text-zinc-300 space-y-2 mb-6">
-          <p>
-            <strong>Date:</strong> {params.date ?? "—"}
-          </p>
-          <p>
-            <strong>Time:</strong> {params.time ?? "—"}
-          </p>
-          <p>
-            <strong>Guests:</strong> {params.guests ?? "—"}
-          </p>
-        </div>
+        {/* DETAILS */}
+        {reservation ? (
+          <div className="bg-neutral-950 border border-neutral-800 rounded-xl p-4 text-left space-y-2 text-sm">
+            <p>
+              <span className="text-neutral-400">Guest Name:</span>{" "}
+              <span className="font-medium">{reservation.name}</span>
+            </p>
 
-        <p className="text-zinc-400 text-sm mb-8">
-          📲 Our team will review your request and send confirmation via
-          WhatsApp shortly.
+            <p>
+              <span className="text-neutral-400">Date:</span>{" "}
+              <span className="font-medium">{reservation.date}</span>
+            </p>
+
+            <p>
+              <span className="text-neutral-400">Time:</span>{" "}
+              <span className="font-medium">{reservation.time}</span>
+            </p>
+
+            <p>
+              <span className="text-neutral-400">Guests:</span>{" "}
+              <span className="font-medium">{reservation.guests}</span>
+            </p>
+
+            {reservation.note && (
+              <p>
+                <span className="text-neutral-400">Special Request:</span>{" "}
+                <span className="font-medium">{reservation.note}</span>
+              </p>
+            )}
+          </div>
+        ) : (
+          <p className="text-zinc-500 text-sm">
+            Reservation details unavailable.
+          </p>
+        )}
+
+        <p className="text-neutral-400 text-sm">
+          Our team will review your booking and send a confirmation via WhatsApp shortly.
         </p>
 
-        <a
+        <Link
           href="/"
-          className="inline-block bg-[var(--primary)] text-black px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition"
+          className="inline-block bg-amber-500 text-neutral-900 px-6 py-3 rounded-md font-semibold hover:bg-amber-400 transition"
         >
           Back to Home
-        </a>
+        </Link>
       </div>
     </main>
   );

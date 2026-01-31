@@ -15,7 +15,7 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     await connectDB();
-    const { name, phone, date, time, guests } = await req.json();
+    const { name, phone, date, time, guests, note } = await req.json();
 
     if (!name || !phone || !date || !time || !guests) {
       return NextResponse.json(
@@ -24,7 +24,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // SLOT CAPACITY
+    /* SLOT CAPACITY CHECK */
     const existing = await Reservation.find({ date, time });
     const totalGuests = existing.reduce(
       (sum: number, r: any) => sum + r.guests,
@@ -38,7 +38,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // IST-SAFE DATE CHECK
+    /* IST-SAFE DATE CHECK */
     const [year, month, dayNum] = date.split("-").map(Number);
     const bookingDate = new Date(year, month - 1, dayNum);
     const weekday = bookingDate.getDay(); // 0 = Sun
@@ -52,6 +52,7 @@ export async function POST(req: Request) {
       date,
       time,
       guests,
+      note: note || "", // ✅ FIX: store special request
       status: autoConfirm ? "confirmed" : "pending",
     });
 

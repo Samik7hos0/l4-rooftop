@@ -11,6 +11,7 @@ type Reservation = {
   date: string;
   time: string;
   guests: number;
+  note?: string;
   status: "confirmed" | "pending";
 };
 
@@ -41,46 +42,43 @@ export default function AdminPage() {
       setAuthorized(true);
       setError("");
     } else {
-      setError("Wrong password");
+      setError("Incorrect password");
     }
   }
 
   /* ================= LOAD DATA ================= */
 
-  async function loadReservations() {
-    const res = await fetch("/api/reservations");
-    setReservations(await res.json());
-  }
+  async function loadData() {
+    const [r, a] = await Promise.all([
+      fetch("/api/reservations"),
+      fetch("/api/analytics"),
+    ]);
 
-  async function loadAnalytics() {
-    const res = await fetch("/api/analytics");
-    setSlots(await res.json());
+    setReservations(await r.json());
+    setSlots(await a.json());
   }
 
   useEffect(() => {
-    if (authorized) {
-      loadReservations();
-      loadAnalytics();
-    }
+    if (authorized) loadData();
   }, [authorized]);
-
-  /* ================= HELPERS ================= */
-
-  function getSlot(date: string, time: string) {
-    return slots.find((s) => s.date === date && s.time === time);
-  }
 
   /* ================= ACTIONS ================= */
 
-  async function confirmReservation(r: Reservation) {
+  async function confirmReservation(id: string) {
     await fetch("/api/reservations", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: r._id }),
+      body: JSON.stringify({ id }),
     });
+    loadData();
+  }
 
-    loadReservations();
-    loadAnalytics();
+  function openWhatsApp(r: Reservation) {
+    const text = encodeURIComponent(
+      `Hello ${r.name}, 👋\n\nYour reservation at *L4 Rooftop* has been confirmed.\n\n📅 Date: ${r.date}\n⏰ Time: ${r.time}\n👥 Guests: ${r.guests}\n\nWe look forward to welcoming you ✨`
+    );
+
+    window.open(`https://wa.me/91${r.phone}?text=${text}`, "_blank");
   }
 
   async function deleteReservation(id: string) {
@@ -91,18 +89,16 @@ export default function AdminPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id }),
     });
-
-    loadReservations();
-    loadAnalytics();
+    loadData();
   }
 
   /* ================= LOGIN ================= */
 
   if (!authorized) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-zinc-900 to-black">
-        <div className="bg-zinc-900/80 backdrop-blur p-8 rounded-2xl w-full max-w-sm shadow-2xl">
-          <h1 className="text-2xl text-center mb-6 text-[var(--primary)]">
+      <main className="min-h-screen flex items-center justify-center bg-black">
+        <div className="bg-neutral-900 p-8 rounded-2xl w-full max-w-sm border border-neutral-800">
+          <h1 className="text-2xl text-center mb-6 text-amber-400">
             Admin Login
           </h1>
 
@@ -111,14 +107,14 @@ export default function AdminPage() {
             placeholder="Admin Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-3 mb-4 rounded bg-black border border-zinc-700"
+            className="w-full p-3 mb-4 rounded bg-black border border-neutral-700"
           />
 
           <button
             onClick={handleLogin}
-            className="w-full bg-[var(--primary)] text-black py-3 rounded font-semibold hover:opacity-90"
+            className="w-full bg-amber-500 text-black py-3 rounded font-semibold hover:bg-amber-400"
           >
-            Login
+            Enter Dashboard
           </button>
 
           {error && (
@@ -129,161 +125,133 @@ export default function AdminPage() {
     );
   }
 
-  /* ================= ANALYTICS ================= */
+  /* ================= DERIVED ================= */
 
   const confirmed = reservations.filter((r) => r.status === "confirmed");
   const pending = reservations.filter((r) => r.status === "pending");
 
-  const totalGuests = reservations.reduce(
-    (sum, r) => sum + r.guests,
-    0
-  );
-
-  const fullSlots = slots.filter((s) => s.full).length;
-
   /* ================= DASHBOARD ================= */
 
   return (
-    <main className="min-h-screen p-8 bg-gradient-to-br from-black via-zinc-900 to-black text-white">
-      <h1 className="text-4xl font-semibold mb-10 text-[var(--primary)]">
-        L4 Admin Dashboard
-      </h1>
+    <main className="min-h-screen p-8 bg-black text-white space-y-16">
+      <header>
+        <h1 className="text-4xl font-semibold text-amber-400">
+          L4 Rooftop · Admin
+        </h1>
+        <p className="text-neutral-400 mt-2">
+          Reservations & Slot Control
+        </p>
+      </header>
 
-      {/* KPI CARDS */}
-      <section className="grid md:grid-cols-4 gap-6 mb-14">
+      {/* KPI */}
+      <section className="grid md:grid-cols-4 gap-6">
         <Kpi title="Total Reservations" value={reservations.length} />
         <Kpi title="Confirmed" value={confirmed.length} green />
-        <Kpi title="Pending" value={pending.length} yellow />
-        <Kpi title="Total Guests" value={totalGuests} />
+        <Kpi title="Pending Review" value={pending.length} yellow />
+        <Kpi title="Full Slots" value={slots.filter(s => s.full).length} />
       </section>
 
       {/* SLOT ANALYTICS */}
-      <section className="mb-16">
-        <h2 className="text-2xl mb-6 text-[var(--primary)]">
+      <section>
+        <h2 className="text-2xl mb-6 text-amber-400">
           Slot Capacity Overview
         </h2>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-3 gap-6">
           {slots.map((s, i) => (
             <div
               key={i}
-              className={`p-5 rounded-xl border shadow ${
+              className={`p-5 rounded-xl border ${
                 s.full
                   ? "border-red-600 bg-red-900/20"
                   : "border-green-600 bg-green-900/20"
               }`}
             >
-              <p className="text-lg font-medium">
-                {s.date} • {s.time}
+              <p className="font-medium">
+                {s.date} · {s.time}
               </p>
-              <p className="mt-2">👥 Booked: {s.booked}</p>
-              <p>🪑 Remaining: {s.remaining}</p>
+              <p className="text-sm mt-2">
+                Booked: {s.booked} | Remaining: {s.remaining}
+              </p>
               <p className="mt-2 font-semibold">
-                {s.full ? "🔴 FULL" : "🟢 AVAILABLE"}
+                {s.full ? "FULL" : "AVAILABLE"}
               </p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* AUTO-CONFIRMED */}
-      <section className="mb-16">
-        <h2 className="text-2xl mb-4 text-green-400">
-          🟢 Auto-Confirmed Reservations
+      {/* AUTO CONFIRMED */}
+      <section>
+        <h2 className="text-2xl mb-6 text-green-400">
+          Auto-Confirmed Reservations
         </h2>
 
-        {confirmed.length === 0 ? (
-          <p className="text-zinc-400">None</p>
-        ) : (
-          <div className="grid md:grid-cols-2 gap-4">
-            {confirmed.map((r) => (
-              <div
-                key={r._id}
-                className="border border-green-600 bg-green-900/20 p-5 rounded-xl"
-              >
-                <p className="font-medium">{r.name}</p>
-                <p className="text-sm text-zinc-300">
-                  {r.date} • {r.time} • {r.guests} guests
-                </p>
+        <div className="grid md:grid-cols-2 gap-4">
+          {confirmed.map((r) => (
+            <ReservationCard key={r._id} r={r} />
+          ))}
+        </div>
+      </section>
+
+      {/* MANUAL REVIEW */}
+      <section>
+        <h2 className="text-2xl mb-6 text-yellow-400">
+          Pending Manual Review
+        </h2>
+
+        <div className="grid md:grid-cols-2 gap-6">
+          {pending.map((r) => (
+            <div
+              key={r._id}
+              className="border border-neutral-700 rounded-xl p-5 bg-neutral-900"
+            >
+              <ReservationCard r={r} />
+
+              <div className="flex gap-3 mt-4">
+                <button
+                  onClick={() => {
+                    confirmReservation(r._id);
+                    openWhatsApp(r);
+                  }}
+                  className="flex-1 bg-green-600 py-2 rounded hover:bg-green-700"
+                >
+                  Confirm & WhatsApp
+                </button>
 
                 <button
                   onClick={() => deleteReservation(r._id)}
-                  className="mt-3 text-sm text-red-400 hover:underline"
+                  className="bg-red-600 px-4 rounded hover:bg-red-700"
                 >
                   Delete
                 </button>
               </div>
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* PENDING */}
-      <section>
-        <h2 className="text-2xl mb-4 text-yellow-400">
-          🟡 Pending Review
-        </h2>
-
-        {pending.length === 0 ? (
-          <p className="text-zinc-400">No pending reservations</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full border border-zinc-700 rounded-xl overflow-hidden">
-              <thead className="bg-zinc-900">
-                <tr>
-                  {["Name", "Date", "Time", "Guests", "Actions"].map((h) => (
-                    <th key={h} className="p-4 border">
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-
-              <tbody>
-                {pending.map((r) => {
-                  const slot = getSlot(r.date, r.time);
-                  const canConfirm =
-                    slot && !slot.full && slot.remaining >= r.guests;
-
-                  return (
-                    <tr key={r._id} className="text-center">
-                      <td className="p-3 border">{r.name}</td>
-                      <td className="p-3 border">{r.date}</td>
-                      <td className="p-3 border">{r.time}</td>
-                      <td className="p-3 border">{r.guests}</td>
-                      <td className="p-3 border space-x-2">
-                        <button
-                          disabled={!canConfirm}
-                          onClick={() => confirmReservation(r)}
-                          className={`px-3 py-1 rounded text-sm ${
-                            canConfirm
-                              ? "bg-green-600 hover:bg-green-700"
-                              : "bg-zinc-700 opacity-50 cursor-not-allowed"
-                          }`}
-                        >
-                          Confirm
-                        </button>
-
-                        <button
-                          onClick={() => deleteReservation(r._id)}
-                          className="bg-red-600 px-3 py-1 rounded text-sm hover:bg-red-700"
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
+            </div>
+          ))}
+        </div>
       </section>
     </main>
   );
 }
 
-/* ================= UI ================= */
+/* ================= COMPONENTS ================= */
+
+function ReservationCard({ r }: { r: Reservation }) {
+  return (
+    <div className="space-y-1 text-sm">
+      <p className="font-medium text-lg">{r.name}</p>
+      <p className="text-neutral-400">
+        {r.date} · {r.time}
+      </p>
+      <p>Guests: {r.guests}</p>
+      {r.note && (
+        <p className="text-neutral-400 italic">
+          “{r.note}”
+        </p>
+      )}
+    </div>
+  );
+}
 
 function Kpi({
   title,
@@ -298,17 +266,15 @@ function Kpi({
 }) {
   return (
     <div
-      className={`p-6 rounded-xl shadow border ${
+      className={`p-6 rounded-xl border ${
         green
           ? "border-green-600 bg-green-900/20"
           : yellow
           ? "border-yellow-600 bg-yellow-900/20"
-          : "border-zinc-700 bg-zinc-900/40"
+          : "border-neutral-700 bg-neutral-900"
       }`}
     >
-      <p className="text-sm uppercase tracking-wide text-zinc-400">
-        {title}
-      </p>
+      <p className="text-sm text-neutral-400">{title}</p>
       <p className="text-3xl font-semibold mt-2">{value}</p>
     </div>
   );
