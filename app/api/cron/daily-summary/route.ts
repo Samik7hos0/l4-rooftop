@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import Reservation from "@/models/Reservation";
-
-const SLOT_CAPACITY = 20;
+import { sendWhatsApp } from "@/lib/whatsapp";
 
 export async function GET() {
   try {
@@ -27,12 +26,14 @@ export async function GET() {
       0
     );
 
+    const SLOT_CAPACITY = 20;
     const slots: Record<string, number> = {};
+
     reservations.forEach((r) => {
       slots[r.time] = (slots[r.time] || 0) + r.guests;
     });
 
-    let peakSlot = "—";
+    let peakSlot = "None";
     let peakGuests = 0;
     let availableSeats = SLOT_CAPACITY;
 
@@ -47,37 +48,30 @@ export async function GET() {
       );
     });
 
-    const whatsapp = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
-    if (!whatsapp) {
-      return NextResponse.json(
-        { error: "WhatsApp number not configured" },
-        { status: 500 }
-      );
-    }
-
     const message = `
-📊 L4 Rooftop — Daily Summary
-
-📅 Date: ${today.toISOString().split("T")[0]}
+📊 L4 Rooftop – Today’s Summary
 
 • Total Reservations: ${totalReservations}
 • Total Guests: ${totalGuests}
 • Peak Slot: ${peakSlot}
-• Seats Remaining (min): ${availableSeats}
+• Available Seats Left: ${availableSeats}
 
-— L4 Admin System
-    `.trim();
+Have a great evening 🌆
+`.trim();
+
+    await sendWhatsApp({
+      to: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER!,
+      message,
+    });
 
     return NextResponse.json({
       success: true,
-      whatsappURL: `https://wa.me/${whatsapp}?text=${encodeURIComponent(
-        message
-      )}`,
+      preview: process.env.ENABLE_WHATSAPP !== "true",
     });
-  } catch (err) {
-    console.error(err);
+  } catch (error) {
+    console.error(error);
     return NextResponse.json(
-      { error: "Failed to generate summary" },
+      { error: "Daily summary failed" },
       { status: 500 }
     );
   }
