@@ -1,78 +1,123 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import Reservation from "@/models/Reservation";
-import { sendWhatsApp } from "@/lib/whatsapp";
+import { sendReservationConfirmation } from "@/lib/whatsapp";
 
+const SLOT_CAPACITY = 20;
+
+/* ================= GET ================= */
 export async function GET() {
+  await connectDB();
+  const reservations = await Reservation.find().sort({ createdAt: -1 });
+  return NextResponse.json(reservations);
+}
+
+/* ================= POST ================= */
+export async function POST(req: Request) {
   try {
     await connectDB();
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const {
+      name,
+      phone,
+      date,
+      time,
+      guests,
+      note,
+      specialRequest,
+    } = await req.json();
 
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1);
+    if (!name || !phone || !date || !time || !guests) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
 
-    const reservations = await Reservation.find({
-      date: {
-        $gte: today.toISOString().split("T")[0],
-        $lt: tomorrow.toISOString().split("T")[0],
-      },
-    });
-
-    const totalReservations = reservations.length;
-    const totalGuests = reservations.reduce(
-      (sum, r) => sum + r.guests,
+    const existing = await Reservation.find({ date, time });
+    const totalGuests = existing.reduce(
+      (sum: number, r: any) => sum + r.guests,
       0
     );
 
-    const SLOT_CAPACITY = 20;
-    const slots: Record<string, number> = {};
-
-    reservations.forEach((r) => {
-      slots[r.time] = (slots[r.time] || 0) + r.guests;
-    });
-
-    let peakSlot = "None";
-    let peakGuests = 0;
-    let availableSeats = SLOT_CAPACITY;
-
-    Object.entries(slots).forEach(([time, guests]) => {
-      if (guests > peakGuests) {
-        peakGuests = guests;
-        peakSlot = time;
-      }
-      availableSeats = Math.min(
-        availableSeats,
-        SLOT_CAPACITY - guests
+    if (totalGuests + guests > SLOT_CAPACITY) {
+      return NextResponse.json(
+        { error: "Slot is full" },
+        { status: 409 }
       );
+    }
+
+    const bookingDate = new Date(date);
+    const weekday = bookingDate.getDay();
+    const isWeekday = weekday >= 1 && weekday <= 4;
+    const autoConfirm = guests <= 4 && isWeekday;
+
+    const finalNote = note || specialRequest || "";
+
+    const reservation = await Reservation.create({
+      name,
+      phone,
+      date,
+      time,
+      guests,
+      note: finalNote,
+      specialRequest: finalNote,
+      status: autoConfirm ? "confirmed" : "pending",
     });
 
-    const message = `
-📊 L4 Rooftop – Today’s Summary
-
-• Total Reservations: ${totalReservations}
-• Total Guests: ${totalGuests}
-• Peak Slot: ${peakSlot}
-• Available Seats Left: ${availableSeats}
-
-Have a great evening 🌆
-`.trim();
-
-    await sendWhatsApp({
-      to: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER!,
-      message,
-    });
+    /* ✅ AUTO SEND WHATSAPP IF CONFIRMED */
+    if (autoConfirm) {
+      await sendReservationConfirmation({
+        name,
+        phone,
+        date,
+        time,
+        guests,
+      });
+    }
 
     return NextResponse.json({
       success: true,
-      preview: process.env.ENABLE_WHATSAPP !== "true",
+      status: reservation.status,
     });
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
+    console.error(err);
     return NextResponse.json(
-      { error: "Daily summary failed" },
+      { error: "Reservation failed" },
       { status: 500 }
     );
   }
+}
+
+/* ================= PATCH (ADMIN CONFIRM) ================= */
+export async function PATCH(req: Request) {
+  await connectDB();
+  const { id } = await req.json();
+
+  const reservation = await Reservation.findByIdAndUpdate(
+    id,
+    { status: "confirmed" },
+    { new: true }
+  );
+
+  if (reservation) {
+    await sendReservationConfirmation({
+      name: reservation.name,
+      phone: reservation.phone,
+      date: reservation.date,
+      time: reservation.time,
+      guests: reservation.guests,
+    });
+  }
+
+  return NextResponse.json({ success: true });
+}
+
+/* ================= DELETE ================= */
+export async function DELETE(req: Request) {
+  await connectDB();
+  const { id } = await req.json();
+
+  await Reservation.findByIdAndDelete(id);
+  return NextResponse.json({ success: true });
 }
