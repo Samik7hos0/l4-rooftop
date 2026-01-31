@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import Reservation from "@/models/Reservation";
+import { sendReservationConfirmation } from "@/lib/whatsapp";
 
 const SLOT_CAPACITY = 20;
 
@@ -49,11 +50,10 @@ export async function POST(req: Request) {
 
     // AUTO CONFIRM LOGIC
     const bookingDate = new Date(date);
-    const weekday = bookingDate.getDay();
+    const weekday = bookingDate.getDay(); // 0 = Sun
     const isWeekday = weekday >= 1 && weekday <= 4;
     const autoConfirm = guests <= 4 && isWeekday;
 
-    // ✅ NORMALIZE NOTE
     const finalNote = note || specialRequest || "";
 
     const reservation = await Reservation.create({
@@ -67,11 +67,23 @@ export async function POST(req: Request) {
       status: autoConfirm ? "confirmed" : "pending",
     });
 
+    /* ✅ AUTO WHATSAPP IF CONFIRMED */
+    if (autoConfirm) {
+      await sendReservationConfirmation({
+        name,
+        phone,
+        date,
+        time,
+        guests,
+      });
+    }
+
     return NextResponse.json({
       success: true,
       status: reservation.status,
     });
   } catch (err) {
+    console.error(err);
     return NextResponse.json(
       { error: "Reservation failed" },
       { status: 500 }
@@ -79,14 +91,27 @@ export async function POST(req: Request) {
   }
 }
 
-/* ================= PATCH ================= */
+/* ================= PATCH (ADMIN CONFIRM) ================= */
 export async function PATCH(req: Request) {
   await connectDB();
   const { id } = await req.json();
 
-  await Reservation.findByIdAndUpdate(id, {
-    status: "confirmed",
-  });
+  const reservation = await Reservation.findByIdAndUpdate(
+    id,
+    { status: "confirmed" },
+    { new: true }
+  );
+
+  /* ✅ WHATSAPP ON MANUAL CONFIRM */
+  if (reservation) {
+    await sendReservationConfirmation({
+      name: reservation.name,
+      phone: reservation.phone,
+      date: reservation.date,
+      time: reservation.time,
+      guests: reservation.guests,
+    });
+  }
 
   return NextResponse.json({ success: true });
 }

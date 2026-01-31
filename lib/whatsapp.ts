@@ -1,5 +1,3 @@
-// lib/whatsapp.ts
-
 export type WhatsAppPayload = {
   to: string;
   message: string;
@@ -29,8 +27,6 @@ export async function sendWhatsApp({
   throw new Error("WhatsApp provider not configured");
 }
 
-/* ================= CONFIRMATION MESSAGE ================= */
-
 export async function sendReservationConfirmation({
   name,
   phone,
@@ -56,7 +52,7 @@ Your table is confirmed.
 👥 Guests: ${guests}
 
 We look forward to hosting you ✨
-  `.trim();
+`.trim();
 
   return sendWhatsApp({
     to: phone,
