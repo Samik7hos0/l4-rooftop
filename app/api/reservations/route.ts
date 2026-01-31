@@ -4,18 +4,27 @@ import Reservation from "@/models/Reservation";
 
 const SLOT_CAPACITY = 20;
 
-/* ================= GET (ADMIN LOAD) ================= */
+/* ================= GET ================= */
 export async function GET() {
   await connectDB();
   const reservations = await Reservation.find().sort({ createdAt: -1 });
   return NextResponse.json(reservations);
 }
 
-/* ================= POST (NEW BOOKING) ================= */
+/* ================= POST ================= */
 export async function POST(req: Request) {
   try {
     await connectDB();
-    const { name, phone, date, time, guests, note } = await req.json();
+
+    const {
+      name,
+      phone,
+      date,
+      time,
+      guests,
+      note,
+      specialRequest,
+    } = await req.json();
 
     if (!name || !phone || !date || !time || !guests) {
       return NextResponse.json(
@@ -24,7 +33,7 @@ export async function POST(req: Request) {
       );
     }
 
-    /* SLOT CAPACITY CHECK */
+    // SLOT CHECK
     const existing = await Reservation.find({ date, time });
     const totalGuests = existing.reduce(
       (sum: number, r: any) => sum + r.guests,
@@ -38,13 +47,14 @@ export async function POST(req: Request) {
       );
     }
 
-    /* IST-SAFE DATE CHECK */
-    const [year, month, dayNum] = date.split("-").map(Number);
-    const bookingDate = new Date(year, month - 1, dayNum);
-    const weekday = bookingDate.getDay(); // 0 = Sun
-
-    const isWeekday = weekday >= 1 && weekday <= 4; // Mon–Thu
+    // AUTO CONFIRM LOGIC
+    const bookingDate = new Date(date);
+    const weekday = bookingDate.getDay();
+    const isWeekday = weekday >= 1 && weekday <= 4;
     const autoConfirm = guests <= 4 && isWeekday;
+
+    // ✅ NORMALIZE NOTE
+    const finalNote = note || specialRequest || "";
 
     const reservation = await Reservation.create({
       name,
@@ -52,7 +62,8 @@ export async function POST(req: Request) {
       date,
       time,
       guests,
-      note: note || "", // ✅ FIX: store special request
+      note: finalNote,
+      specialRequest: finalNote,
       status: autoConfirm ? "confirmed" : "pending",
     });
 
@@ -68,7 +79,7 @@ export async function POST(req: Request) {
   }
 }
 
-/* ================= PATCH (ADMIN CONFIRM) ================= */
+/* ================= PATCH ================= */
 export async function PATCH(req: Request) {
   await connectDB();
   const { id } = await req.json();
@@ -80,7 +91,7 @@ export async function PATCH(req: Request) {
   return NextResponse.json({ success: true });
 }
 
-/* ================= DELETE (ADMIN DELETE) ================= */
+/* ================= DELETE ================= */
 export async function DELETE(req: Request) {
   await connectDB();
   const { id } = await req.json();

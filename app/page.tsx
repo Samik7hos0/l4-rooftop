@@ -1,64 +1,37 @@
-import Link from "next/link";
-
 export default function HomePage() {
   return (
-    <main>
-      {/* HERO */}
-      <section className="max-w-6xl mx-auto px-6 min-h-[80vh] grid md:grid-cols-2 gap-16 items-center">
-        <div>
-          <p className="text-sm tracking-widest text-zinc-500 mb-4">
-            ROOFTOP DINING • DHARMANAGAR
-          </p>
+    <main className="min-h-screen flex items-center justify-center px-6">
+      <section className="max-w-3xl text-center space-y-6">
+        <p className="text-sm tracking-widest text-neutral-400 uppercase">
+          Rooftop Dining · Dharmanagar
+        </p>
 
-          <h1 className="text-4xl md:text-6xl font-semibold leading-tight mb-6">
-            Level Four <br /> Rooftop Restaurant
-          </h1>
+        <h1 className="text-4xl md:text-6xl font-semibold leading-tight">
+          Level Four <br />
+          Rooftop Restaurant
+        </h1>
 
-          <p className="text-zinc-600 max-w-md mb-10">
-            A premium rooftop experience with curated cuisine, city lights,
-            and unforgettable evenings under the open sky.
-          </p>
+        <p className="text-neutral-400 max-w-xl mx-auto">
+          A modern rooftop experience with carefully crafted cuisine, warm
+          ambience, and city lights that elevate every evening.
+        </p>
 
-          <div className="flex gap-4">
-            <Link href="/reservation" className="btn-primary">
-              Reserve a Table
-            </Link>
-            <Link href="/menu" className="btn-outline">
-              Explore Menu
-            </Link>
-          </div>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+          <a
+            href="/reservation"
+            className="rounded-md bg-amber-500 px-6 py-3 text-sm font-medium text-neutral-900 hover:bg-amber-400 transition"
+          >
+            Reserve a Table
+          </a>
+
+          <a
+            href="/menu"
+            className="rounded-md border border-neutral-700 px-6 py-3 text-sm font-medium hover:bg-neutral-900 transition"
+          >
+            Explore Menu
+          </a>
         </div>
-
-        {/* Visual placeholder */}
-        <div className="aspect-[4/5] rounded-3xl bg-zinc-200 flex items-center justify-center text-zinc-500">
-          Ambience / Food Image
-        </div>
-      </section>
-
-      {/* FEATURES */}
-      <section className="max-w-6xl mx-auto px-6 py-24 grid md:grid-cols-3 gap-12 text-center">
-        <Feature
-          title="Rooftop Ambience"
-          desc="Open-sky seating with city views and refined evening vibes."
-        />
-        <Feature
-          title="Limited Seating"
-          desc="Curated capacity for comfort, privacy, and exclusivity."
-        />
-        <Feature
-          title="Prime Location"
-          desc="Power House Quarter Complex, Dharmanagar."
-        />
       </section>
     </main>
-  );
-}
-
-function Feature({ title, desc }: { title: string; desc: string }) {
-  return (
-    <div>
-      <h3 className="text-xl font-medium mb-3">{title}</h3>
-      <p className="text-zinc-600 text-sm">{desc}</p>
-    </div>
   );
 }
