@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import KpiStrip from "./components/KpiStrip";
-import SlotHeatmap from "./components/SlotHeatmap";
-import TodaySummary from "./components/TodaySummary";
+import InsightStrip from "./components/InsightStrip";
 import ReservationList from "./components/ReservationList";
+import TodaySummary from "./components/TodaySummary";
 
 export type Reservation = {
   _id: string;
@@ -19,25 +18,23 @@ export type Reservation = {
 };
 
 export default function AdminPage() {
-  const [password, setPassword] = useState("");
   const [authorized, setAuthorized] = useState(false);
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [reservations, setReservations] = useState<Reservation[]>([]);
 
   const today = new Date().toISOString().slice(0, 10);
 
-  /* AUTH */
-  function handleLogin() {
+  function login() {
     if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
       setAuthorized(true);
       setError("");
     } else {
-      setError("Wrong password");
+      setError("Incorrect password");
     }
   }
 
-  /* LOAD */
-  async function loadReservations() {
+  async function load() {
     const res = await fetch("/api/reservations");
     const data = await res.json();
     data.sort(
@@ -48,68 +45,65 @@ export default function AdminPage() {
   }
 
   useEffect(() => {
-    if (authorized) loadReservations();
+    if (authorized) load();
   }, [authorized]);
 
-  /* LOGIN UI */
   if (!authorized) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-black text-white">
-        <div className="bg-neutral-900 border border-neutral-800 p-8 rounded-xl w-full max-w-sm">
-          <h1 className="text-xl mb-4 text-center">Admin Login</h1>
+      <main className="min-h-screen flex items-center justify-center">
+        <div className="bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] p-8 rounded-2xl w-full max-w-sm">
+          <h1 className="text-lg mb-4 text-white/80">Admin Access</h1>
           <input
             type="password"
-            placeholder="Admin Password"
+            placeholder="Password"
+            className="w-full bg-black/40 border border-white/[0.08] rounded px-4 py-3 mb-3 outline-none"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-3 mb-3 rounded bg-black border border-neutral-700"
           />
           <button
-            onClick={handleLogin}
-            className="w-full bg-amber-500 text-black py-2 rounded font-semibold"
+            onClick={login}
+            className="w-full py-3 rounded-lg bg-white/90 text-black font-medium hover:bg-white"
           >
-            Login
+            Continue
           </button>
-          {error && <p className="text-red-400 mt-3 text-center">{error}</p>}
+          {error && <p className="text-red-400 text-sm mt-3">{error}</p>}
         </div>
       </main>
     );
   }
 
-  /* DATA */
   const todayReservations = reservations.filter((r) => r.date === today);
   const pending = reservations.filter((r) => r.status === "pending");
   const confirmed = reservations.filter((r) => r.status === "confirmed");
 
   return (
-    <main className="min-h-screen bg-black text-white p-10 space-y-14">
-      <h1 className="text-4xl font-semibold text-amber-400">
-        L4 Admin Dashboard
-      </h1>
+    <main className="px-12 py-14 space-y-16 max-w-7xl mx-auto">
+      <header>
+        <h1 className="text-4xl font-medium">L4 Admin</h1>
+        <p className="text-white/50 mt-1">
+          Reservations & daily performance
+        </p>
+      </header>
 
-      <KpiStrip
-        todayReservations={todayReservations}
+      <InsightStrip
+        today={todayReservations}
         pending={pending}
         confirmed={confirmed}
       />
 
-      <SlotHeatmap todayReservations={todayReservations} />
-
-      <TodaySummary todayReservations={todayReservations} />
+      <TodaySummary reservations={todayReservations} />
 
       <ReservationList
-  title="Pending Manual Review"
-  color="text-yellow-400"
-  reservations={pending}
-  onRefresh={loadReservations}
-/>
+        title="Pending Review"
+        reservations={pending}
+        refresh={load}
+        actionable
+      />
 
-<ReservationList
-  title="Confirmed Reservations"
-  color="text-green-400"
-  reservations={confirmed}
-/>
-
+      <ReservationList
+        title="Confirmed"
+        reservations={confirmed}
+      />
     </main>
   );
 }

@@ -11,34 +11,26 @@ export default function SlotHeatmap({
     slots[r.time] = (slots[r.time] || 0) + r.guests;
   });
 
-  const data = Object.entries(slots).sort((a, b) => b[1] - a[1]);
-
   return (
-    <section className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
-      <h2 className="text-xl text-amber-400 mb-4">
-        Slot Occupancy Today
-      </h2>
+    <div className="bg-zinc-900/70 backdrop-blur border border-zinc-800 rounded-2xl p-8">
+      <h3 className="text-lg mb-6">Slot Load</h3>
 
-      {data.length === 0 ? (
-        <p className="text-neutral-500">No bookings today.</p>
-      ) : (
-        <div className="space-y-3">
-          {data.map(([time, guests]) => (
-            <div key={time}>
-              <div className="flex justify-between text-sm mb-1">
-                <span>{time}</span>
-                <span>{guests} guests</span>
-              </div>
-              <div className="h-2 bg-neutral-800 rounded">
-                <div
-                  className="h-2 bg-amber-500 rounded"
-                  style={{ width: `${Math.min(guests * 10, 100)}%` }}
-                />
-              </div>
+      <div className="space-y-3">
+        {Object.entries(slots).map(([time, guests]) => (
+          <div key={time}>
+            <div className="flex justify-between text-sm text-zinc-400 mb-1">
+              <span>{time}</span>
+              <span>{guests} guests</span>
             </div>
-          ))}
-        </div>
-      )}
-    </section>
+            <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-white/80"
+                style={{ width: `${Math.min(100, guests * 5)}%` }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

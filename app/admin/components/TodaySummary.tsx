@@ -1,30 +1,22 @@
 import { Reservation } from "../page";
 
 export default function TodaySummary({
-  todayReservations,
+  reservations,
 }: {
-  todayReservations: Reservation[];
+  reservations: Reservation[];
 }) {
-  const peak =
-    todayReservations.reduce(
-      (max, r) => (r.guests > max.guests ? r : max),
-      todayReservations[0]
-    ) || null;
+  if (reservations.length === 0) return null;
+
+  const peak = reservations.reduce((a, b) =>
+    a.guests > b.guests ? a : b
+  );
 
   return (
-    <section className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
-      <h2 className="text-xl text-amber-400 mb-4">
-        Today Summary
-      </h2>
-
-      {todayReservations.length === 0 ? (
-        <p className="text-neutral-500">No reservations today.</p>
-      ) : (
-        <p className="text-sm">
-          Peak booking at <strong>{peak.time}</strong> with{" "}
-          <strong>{peak.guests}</strong> guests.
-        </p>
-      )}
-    </section>
+    <div className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.06] rounded-2xl p-6">
+      <p className="text-white/60 text-sm">Today’s Highlight</p>
+      <p className="text-lg mt-1">
+        Peak booking: {peak.time} ({peak.guests} guests)
+      </p>
+    </div>
   );
 }
