@@ -1,3 +1,5 @@
+"use client";
+
 import { Reservation } from "../page";
 
 export default function KpiStrip({
@@ -9,23 +11,31 @@ export default function KpiStrip({
   pending: Reservation[];
   confirmed: Reservation[];
 }) {
-  const cards = [
-    { label: "Today", value: todayReservations.length },
-    { label: "Pending", value: pending.length },
-    { label: "Confirmed", value: confirmed.length },
-  ];
+  const todayGuests = todayReservations.reduce(
+    (sum, r) => sum + r.guests,
+    0
+  );
 
   return (
-    <section className="grid md:grid-cols-3 gap-6">
-      {cards.map((c) => (
-        <div
-          key={c.label}
-          className="bg-zinc-900/70 backdrop-blur border border-zinc-800 rounded-2xl p-6"
-        >
-          <p className="text-sm text-zinc-400">{c.label}</p>
-          <p className="text-3xl font-semibold mt-2">{c.value}</p>
-        </div>
-      ))}
+    <section className="flex gap-20">
+      <div>
+        <p className="text-white/40 text-sm">Today Guests</p>
+        <p className="text-[28px] font-semibold">{todayGuests}</p>
+      </div>
+
+      <div>
+        <p className="text-white/40 text-sm">Pending</p>
+        <p className="text-[28px] font-semibold">
+          {pending.length}
+        </p>
+      </div>
+
+      <div>
+        <p className="text-white/40 text-sm">Confirmed</p>
+        <p className="text-[28px] font-semibold">
+          {confirmed.length}
+        </p>
+      </div>
     </section>
   );
 }

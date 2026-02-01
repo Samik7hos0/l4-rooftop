@@ -2,18 +2,19 @@
 
 import { Reservation } from "../page";
 
+type Props = {
+  title: string;
+  reservations: Reservation[];
+  actionable?: boolean;
+  refresh?: () => void;
+};
+
 export default function ReservationList({
   title,
   reservations,
   actionable,
   refresh,
-}: {
-  title: string;
-  reservations: Reservation[];
-  actionable?: boolean;
-  refresh?: () => void;
-}) {
-  /* ✅ renamed to avoid conflict */
+}: Props) {
   async function confirmReservation(r: Reservation) {
     await fetch("/api/reservations", {
       method: "PATCH",
@@ -32,7 +33,6 @@ export default function ReservationList({
   }
 
   async function deleteReservation(id: string) {
-    /* ✅ explicitly browser confirm */
     if (!window.confirm("Delete reservation?")) return;
 
     await fetch("/api/reservations", {
@@ -58,32 +58,44 @@ export default function ReservationList({
         {reservations.map((r) => (
           <div
             key={r._id}
-            className="group py-5 flex justify-between items-center transition-all"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (!actionable) return;
+              if (e.key === "Enter") confirmReservation(r);
+              if (e.key === "Delete" || e.key === "Backspace")
+                deleteReservation(r._id);
+            }}
+            className="
+              group py-5 flex justify-between items-center
+              transition outline-none
+              hover:bg-white/[0.02]
+              focus:bg-white/[0.04]
+              focus:ring-1 focus:ring-white/10
+            "
           >
-            <div>
+            <div className="space-y-1">
               <p className="text-[15px] font-medium">{r.name}</p>
               <p className="text-[13px] text-white/40">
                 {r.date} · {r.time} · {r.guests} guests
               </p>
               {r.note && (
-                <p className="text-[13px] text-white/50 mt-1 italic">
+                <p className="text-[13px] text-white/50 italic">
                   “{r.note}”
                 </p>
               )}
             </div>
 
             {actionable && (
-              <div className="flex gap-6 opacity-0 group-hover:opacity-100 transition">
+              <div className="flex gap-6 text-[13px] opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition">
                 <button
                   onClick={() => confirmReservation(r)}
-                  className="text-[13px] text-white/80 hover:text-white"
+                  className="text-white/80 hover:text-white"
                 >
-                  Confirm & Message
+                  Confirm
                 </button>
-
                 <button
                   onClick={() => deleteReservation(r._id)}
-                  className="text-[13px] text-white/30 hover:text-red-400"
+                  className="text-white/30 hover:text-red-400"
                 >
                   Delete
                 </button>

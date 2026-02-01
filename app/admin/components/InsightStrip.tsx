@@ -1,31 +1,36 @@
+"use client";
+
 import { Reservation } from "../page";
 
 export default function InsightStrip({
-  today,
+  todayReservations,
   pending,
   confirmed,
 }: {
-  today: Reservation[];
+  todayReservations: Reservation[];
   pending: Reservation[];
   confirmed: Reservation[];
 }) {
-  const guestsToday = today.reduce((s, r) => s + r.guests, 0);
-
   return (
-    <div className="flex flex-wrap gap-10 text-white/90">
-      <Metric label="Today Bookings" value={today.length} />
-      <Metric label="Today Guests" value={guestsToday} />
-      <Metric label="Pending" value={pending.length} />
-      <Metric label="Confirmed" value={confirmed.length} />
-    </div>
-  );
-}
+    <section className="flex gap-12 text-white/80 text-sm">
+      <div>
+        <p className="text-white/40">Today Bookings</p>
+        <p className="text-2xl font-medium">
+          {todayReservations.length}
+        </p>
+      </div>
 
-function Metric({ label, value }: { label: string; value: number }) {
-  return (
-    <div>
-      <p className="text-sm text-white/50">{label}</p>
-      <p className="text-3xl font-semibold">{value}</p>
-    </div>
+      <div>
+        <p className="text-white/40">Pending</p>
+        <p className="text-2xl font-medium">{pending.length}</p>
+      </div>
+
+      <div>
+        <p className="text-white/40">Confirmed</p>
+        <p className="text-2xl font-medium">
+          {confirmed.length}
+        </p>
+      </div>
+    </section>
   );
 }
