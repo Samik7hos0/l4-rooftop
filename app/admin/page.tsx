@@ -9,8 +9,10 @@ import KpiStrip from "./components/KpiStrip";
 import SlotHeatmap from "./components/SlotHeatmap";
 import TodaySummary from "./components/TodaySummary";
 import ReservationList from "./components/ReservationList";
-import GlobalSearch from "./components/GlobalSearch";
-import FilterBar from "./components/FilterBar";
+
+/* Toolbar */
+import ToolbarButton from "./components/ToolbarButton";
+import ToolbarModal from "./components/ToolbarModal";
 
 /* TYPES */
 export type Reservation = {
@@ -28,9 +30,13 @@ export type Reservation = {
 export default function AdminPage() {
   const [authorized, setAuthorized] = useState(false);
   const [password, setPassword] = useState("");
+
   const [reservations, setReservations] = useState<Reservation[]>([]);
+
+  /* Toolbar state */
+  const [toolbarOpen, setToolbarOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState<"all" | "pending" | "confirmed">("all");
+  const [filter, setFilter] = useState<string>("all");
 
   /* AUTH */
   function handleLogin() {
@@ -41,13 +47,16 @@ export default function AdminPage() {
     }
   }
 
-  /* LOAD */
+  /* LOAD DATA */
   async function loadReservations() {
     const res = await fetch("/api/reservations");
     const data: Reservation[] = await res.json();
+
     data.sort(
-      (a, b) => +new Date(b.createdAt) - +new Date(a.createdAt)
+      (a, b) =>
+        +new Date(b.createdAt) - +new Date(a.createdAt)
     );
+
     setReservations(data);
   }
 
@@ -55,12 +64,26 @@ export default function AdminPage() {
     if (authorized) loadReservations();
   }, [authorized]);
 
+  /* ⌘K / Ctrl+K */
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setToolbarOpen(true);
+      }
+    }
+
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   /* LOGIN */
   if (!authorized) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-black text-white px-6">
         <div className="w-full max-w-sm bg-white/[0.04] backdrop-blur-xl p-8 rounded-2xl">
           <h1 className="text-xl text-center mb-6">Admin Access</h1>
+
           <input
             type="password"
             placeholder="Password"
@@ -68,6 +91,7 @@ export default function AdminPage() {
             onChange={(e) => setPassword(e.target.value)}
             className="w-full p-3 rounded bg-black border border-white/10 mb-4"
           />
+
           <button
             onClick={handleLogin}
             className="w-full py-2 rounded bg-white text-black font-medium"
@@ -79,7 +103,7 @@ export default function AdminPage() {
     );
   }
 
-  /* FILTERING */
+  /* FILTERING LOGIC */
   const today = new Date().toISOString().slice(0, 10);
 
   const filtered = reservations.filter((r) => {
@@ -88,8 +112,35 @@ export default function AdminPage() {
       r.phone.includes(query) ||
       r.date.includes(query);
 
-    const matchFilter =
-      filter === "all" ? true : r.status === filter;
+    let matchFilter = true;
+
+    switch (filter) {
+      case "today":
+        matchFilter = r.date === today;
+        break;
+      case "pending":
+        matchFilter = r.status === "pending";
+        break;
+      case "confirmed":
+        matchFilter = r.status === "confirmed";
+        break;
+      case "upcoming":
+        matchFilter = r.status === "confirmed" && r.date > today;
+        break;
+      case "past":
+        matchFilter = r.date < today;
+        break;
+      case "large-party":
+        matchFilter = r.guests >= 6;
+        break;
+      case "special-request":
+        matchFilter = Boolean(r.note);
+        break;
+      case "peak-hour":
+        matchFilter =
+          r.time >= "18:00" && r.time <= "21:00";
+        break;
+    }
 
     return matchQuery && matchFilter;
   });
@@ -103,13 +154,18 @@ export default function AdminPage() {
 
   return (
     <main className="min-h-screen bg-black text-white">
-      {/* TOP TOOLBAR */}
-      <div className="sticky top-0 z-50 bg-black/70 backdrop-blur-xl border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col gap-4">
-          <GlobalSearch value={query} onChange={setQuery} />
-          <FilterBar value={filter} onChange={setFilter} />
-        </div>
-      </div>
+      {/* Floating Toolbar Trigger */}
+      <ToolbarButton onOpen={() => setToolbarOpen(true)} />
+
+      {/* Toolbar Modal */}
+      <ToolbarModal
+        open={toolbarOpen}
+        onClose={() => setToolbarOpen(false)}
+        query={query}
+        setQuery={setQuery}
+        filter={filter}
+        setFilter={setFilter}
+      />
 
       {/* CONTENT */}
       <div className="px-6 md:px-16 py-16 space-y-24 max-w-7xl mx-auto">

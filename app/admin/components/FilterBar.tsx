@@ -1,35 +1,41 @@
 "use client";
 
 const filters = [
-  { id: "all", label: "All" },
-  { id: "pending", label: "Pending" },
-  { id: "confirmed", label: "Confirmed" },
-] as const;
+  "all",
+  "today",
+  "pending",
+  "confirmed",
+  "upcoming",
+  "past",
+  "large-party",
+  "special-request",
+  "peak-hour",
+];
 
 export default function FilterBar({
   value,
   onChange,
 }: {
-  value: "all" | "pending" | "confirmed";
-  onChange: (v: any) => void;
+  value: string;
+  onChange: (v: string) => void;
 }) {
   return (
-    <div className="flex gap-2 overflow-x-auto">
+    <div className="flex flex-wrap gap-2">
       {filters.map((f) => (
         <button
-          key={f.id}
-          onClick={() => onChange(f.id)}
+          key={f}
+          onClick={() => onChange(f)}
           className={`
-            px-4 py-1.5 rounded-full text-sm whitespace-nowrap
+            px-3 py-1.5 rounded-full text-xs capitalize
             transition
             ${
-              value === f.id
+              value === f
                 ? "bg-white text-black"
-                : "bg-white/[0.05] text-white/70 hover:bg-white/[0.1]"
+                : "bg-white/[0.05] text-white/70 hover:bg-white/[0.12]"
             }
           `}
         >
-          {f.label}
+          {f.replace("-", " ")}
         </button>
       ))}
     </div>

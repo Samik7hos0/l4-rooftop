@@ -9,15 +9,16 @@ export default function GlobalSearch({
 }) {
   return (
     <input
+      autoFocus
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      placeholder="Search reservations, guests, dates…"
+      placeholder="Search guests, phone, date…"
       className="
         w-full
-        rounded-full
-        bg-white/[0.06]
+        bg-white/[0.05]
         border border-white/[0.08]
-        px-5 py-3
+        rounded-xl
+        px-4 py-3
         text-sm
         text-white
         placeholder-white/40
