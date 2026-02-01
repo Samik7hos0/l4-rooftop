@@ -1,66 +1,37 @@
 "use client";
 
-type Filter =
-  | "today"
-  | "pending"
-  | "large"
-  | "special";
+const filters = [
+  { id: "all", label: "All" },
+  { id: "pending", label: "Pending" },
+  { id: "confirmed", label: "Confirmed" },
+] as const;
 
 export default function FilterBar({
-  active,
-  toggle,
+  value,
+  onChange,
 }: {
-  active: Filter[];
-  toggle: (f: Filter) => void;
+  value: "all" | "pending" | "confirmed";
+  onChange: (v: any) => void;
 }) {
   return (
-    <div className="flex flex-wrap gap-2">
-      <FilterButton
-        label="Today"
-        active={active.includes("today")}
-        onClick={() => toggle("today")}
-      />
-      <FilterButton
-        label="Pending"
-        active={active.includes("pending")}
-        onClick={() => toggle("pending")}
-      />
-      <FilterButton
-        label="Large Party"
-        active={active.includes("large")}
-        onClick={() => toggle("large")}
-      />
-      <FilterButton
-        label="Special Request"
-        active={active.includes("special")}
-        onClick={() => toggle("special")}
-      />
+    <div className="flex gap-2 overflow-x-auto">
+      {filters.map((f) => (
+        <button
+          key={f.id}
+          onClick={() => onChange(f.id)}
+          className={`
+            px-4 py-1.5 rounded-full text-sm whitespace-nowrap
+            transition
+            ${
+              value === f.id
+                ? "bg-white text-black"
+                : "bg-white/[0.05] text-white/70 hover:bg-white/[0.1]"
+            }
+          `}
+        >
+          {f.label}
+        </button>
+      ))}
     </div>
-  );
-}
-
-function FilterButton({
-  label,
-  active,
-  onClick,
-}: {
-  label: string;
-  active: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`
-        px-3 py-1.5 rounded-full text-sm transition
-        ${
-          active
-            ? "bg-white text-black"
-            : "bg-white/[0.06] text-white/70 hover:text-white"
-        }
-      `}
-    >
-      {label}
-    </button>
   );
 }
