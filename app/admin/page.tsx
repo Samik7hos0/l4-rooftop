@@ -9,8 +9,8 @@ import KpiStrip from "./components/KpiStrip";
 import SlotHeatmap from "./components/SlotHeatmap";
 import TodaySummary from "./components/TodaySummary";
 import ReservationList from "./components/ReservationList";
-import CommandPalette from "./components/CommandPalette";
-import CommandHint from "./components/CommandHint";
+import GlobalSearch from "./components/GlobalSearch";
+import SearchHint from "./components/SearchHint";
 
 /* TYPES */
 export type Reservation = {
@@ -30,49 +30,41 @@ export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [reservations, setReservations] = useState<Reservation[]>([]);
 
-  /* ---------------- AUTH ---------------- */
   function handleLogin() {
     if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
       setAuthorized(true);
     }
   }
 
-  /* ---------------- LOAD DATA ---------------- */
   async function loadReservations() {
     const res = await fetch("/api/reservations");
     const data: Reservation[] = await res.json();
-
-    data.sort(
-      (a, b) => +new Date(b.createdAt) - +new Date(a.createdAt)
+    setReservations(
+      data.sort(
+        (a, b) =>
+          +new Date(b.createdAt) - +new Date(a.createdAt)
+      )
     );
-
-    setReservations(data);
   }
 
   useEffect(() => {
     if (authorized) loadReservations();
   }, [authorized]);
 
-  /* ---------------- LOGIN SCREEN ---------------- */
   if (!authorized) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-black text-white px-6">
-        <div className="w-full max-w-sm bg-white/[0.04] backdrop-blur-xl p-8 rounded-2xl">
-          <h1 className="text-xl text-center mb-6">
-            Admin Access
-          </h1>
-
+      <main className="min-h-screen flex items-center justify-center bg-black text-white">
+        <div className="bg-white/[0.04] p-8 rounded-2xl w-[360px]">
           <input
             type="password"
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-3 rounded bg-black border border-white/10 mb-4"
+            className="w-full p-3 mb-4 bg-black border border-white/10 rounded"
           />
-
           <button
             onClick={handleLogin}
-            className="w-full py-2 rounded bg-white text-black font-medium"
+            className="w-full bg-white text-black py-2 rounded"
           >
             Continue
           </button>
@@ -81,40 +73,21 @@ export default function AdminPage() {
     );
   }
 
-  /* ---------------- TIMELINE SPLIT ---------------- */
   const today = new Date().toISOString().slice(0, 10);
 
-  const todayReservations = reservations.filter(
-    (r) => r.date === today
-  );
-
-  const pending = reservations.filter(
-    (r) => r.status === "pending"
-  );
-
+  const todayReservations = reservations.filter(r => r.date === today);
+  const pending = reservations.filter(r => r.status === "pending");
   const upcoming = reservations.filter(
-    (r) => r.status === "confirmed" && r.date > today
+    r => r.status === "confirmed" && r.date > today
   );
+  const past = reservations.filter(r => r.date < today);
 
-  const past = reservations.filter(
-    (r) => r.date < today
-  );
-
-  /* ---------------- ACTIONS ---------------- */
   async function confirmReservation(r: Reservation) {
     await fetch("/api/reservations", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: r._id }),
     });
-
-    window.open(
-      `https://wa.me/91${r.phone}?text=${encodeURIComponent(
-        `Hello ${r.name}, your reservation at L4 Rooftop is confirmed.\n\n${r.date} • ${r.time}\nGuests: ${r.guests}`
-      )}`,
-      "_blank"
-    );
-
     loadReservations();
   }
 
@@ -124,28 +97,17 @@ export default function AdminPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: r._id }),
     });
-
     loadReservations();
   }
 
-  /* ---------------- UI ---------------- */
   return (
     <>
       <main className="min-h-screen bg-black text-white px-6 md:px-16 py-14 space-y-24">
-        {/* HEADER */}
         <FadeIn>
-          <header>
-            <h1 className="text-3xl md:text-[44px] font-semibold tracking-tight">
-              L4 Admin
-            </h1>
-            <p className="text-white/50 mt-2">
-              Reservations & daily performance
-            </p>
-          </header>
+          <h1 className="text-4xl font-semibold">L4 Admin</h1>
         </FadeIn>
 
-        {/* INSIGHTS */}
-        <FadeIn delay={0.05}>
+        <FadeIn>
           <InsightStrip
             todayReservations={todayReservations}
             pending={pending}
@@ -153,7 +115,7 @@ export default function AdminPage() {
           />
         </FadeIn>
 
-        <FadeIn delay={0.1}>
+        <FadeIn>
           <KpiStrip
             todayReservations={todayReservations}
             pending={pending}
@@ -161,17 +123,15 @@ export default function AdminPage() {
           />
         </FadeIn>
 
-        {/* HEATMAP + SUMMARY */}
-        <FadeIn delay={0.15}>
+        <FadeIn>
           <SlotHeatmap reservations={todayReservations} />
         </FadeIn>
 
-        <FadeIn delay={0.2}>
+        <FadeIn>
           <TodaySummary reservations={todayReservations} />
         </FadeIn>
 
-        {/* TIMELINE LISTS */}
-        <FadeIn delay={0.25}>
+        <FadeIn>
           <ReservationList
             title="Today"
             reservations={todayReservations}
@@ -180,7 +140,7 @@ export default function AdminPage() {
           />
         </FadeIn>
 
-        <FadeIn delay={0.3}>
+        <FadeIn>
           <ReservationList
             title="Pending Review"
             reservations={pending}
@@ -189,14 +149,14 @@ export default function AdminPage() {
           />
         </FadeIn>
 
-        <FadeIn delay={0.35}>
+        <FadeIn>
           <ReservationList
             title="Upcoming"
             reservations={upcoming}
           />
         </FadeIn>
 
-        <FadeIn delay={0.4}>
+        <FadeIn>
           <ReservationList
             title="Past"
             reservations={past}
@@ -204,13 +164,13 @@ export default function AdminPage() {
         </FadeIn>
       </main>
 
-      {/* COMMAND SYSTEM */}
-      <CommandPalette
+      {/* GLOBAL SEARCH */}
+      <GlobalSearch
         reservations={reservations}
         onConfirm={confirmReservation}
         onDelete={deleteReservation}
       />
-      <CommandHint />
+      <SearchHint />
     </>
   );
 }
