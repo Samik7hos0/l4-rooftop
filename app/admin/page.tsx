@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /* REQUIRED COMPONENTS */
 import FadeIn from "./components/FadeIn";
@@ -29,6 +29,12 @@ export default function AdminPage() {
   const [authorized, setAuthorized] = useState(false);
   const [password, setPassword] = useState("");
   const [reservations, setReservations] = useState<Reservation[]>([]);
+
+  /* SECTION REFS */
+  const todayRef = useRef<HTMLDivElement>(null);
+  const pendingRef = useRef<HTMLDivElement>(null);
+  const upcomingRef = useRef<HTMLDivElement>(null);
+  const pastRef = useRef<HTMLDivElement>(null);
 
   function handleLogin() {
     if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
@@ -82,6 +88,16 @@ export default function AdminPage() {
   );
   const past = reservations.filter(r => r.date < today);
 
+  function scrollToSection(section: "today" | "pending" | "upcoming" | "past") {
+    const map = {
+      today: todayRef,
+      pending: pendingRef,
+      upcoming: upcomingRef,
+      past: pastRef,
+    };
+    map[section].current?.scrollIntoView({ behavior: "smooth" });
+  }
+
   async function confirmReservation(r: Reservation) {
     await fetch("/api/reservations", {
       method: "PATCH",
@@ -131,44 +147,45 @@ export default function AdminPage() {
           <TodaySummary reservations={todayReservations} />
         </FadeIn>
 
-        <FadeIn>
+        <div ref={todayRef}>
           <ReservationList
             title="Today"
             reservations={todayReservations}
             actionable
             refresh={loadReservations}
           />
-        </FadeIn>
+        </div>
 
-        <FadeIn>
+        <div ref={pendingRef}>
           <ReservationList
             title="Pending Review"
             reservations={pending}
             actionable
             refresh={loadReservations}
           />
-        </FadeIn>
+        </div>
 
-        <FadeIn>
+        <div ref={upcomingRef}>
           <ReservationList
             title="Upcoming"
             reservations={upcoming}
           />
-        </FadeIn>
+        </div>
 
-        <FadeIn>
+        <div ref={pastRef}>
           <ReservationList
             title="Past"
             reservations={past}
           />
-        </FadeIn>
+        </div>
       </main>
 
-      {/* GLOBAL SEARCH */}
+      {/* COMMAND SYSTEM */}
       <GlobalSearch
         reservations={reservations}
         onConfirm={confirmReservation}
         onDelete={deleteReservation}
+        onNavigate={scrollToSection}
       />
       <SearchHint />
     </>
