@@ -137,7 +137,7 @@ export default function AdminPage() {
             todayReservations={todayReservations}
             pending={pending}
             confirmed={upcoming}
-          /><FadeIn delay={0.12}>
+          /><FadeIn delay={0.22}>
   <WeeklyAnalytics reservations={reservations} />
 </FadeIn>
 
