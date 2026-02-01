@@ -5,14 +5,15 @@ import { Reservation } from "../page";
 export default function ReservationList({
   title,
   reservations,
-  refresh,
   actionable,
+  refresh,
 }: {
   title: string;
   reservations: Reservation[];
-  refresh?: () => void;
   actionable?: boolean;
+  refresh?: () => void;
 }) {
+  /* ✅ renamed to avoid conflict */
   async function confirmReservation(r: Reservation) {
     await fetch("/api/reservations", {
       method: "PATCH",
@@ -31,7 +32,8 @@ export default function ReservationList({
   }
 
   async function deleteReservation(id: string) {
-    if (!window.confirm("Delete this reservation?")) return;
+    /* ✅ explicitly browser confirm */
+    if (!window.confirm("Delete reservation?")) return;
 
     await fetch("/api/reservations", {
       method: "DELETE",
@@ -44,42 +46,44 @@ export default function ReservationList({
 
   return (
     <section className="space-y-6">
-      <h2 className="text-xl text-white/70">{title}</h2>
+      <h2 className="text-sm uppercase tracking-wide text-white/40">
+        {title}
+      </h2>
 
       {reservations.length === 0 && (
-        <p className="text-white/40">No records</p>
+        <p className="text-white/30">No records</p>
       )}
 
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="divide-y divide-white/5">
         {reservations.map((r) => (
           <div
             key={r._id}
-            className="bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] rounded-2xl p-6 space-y-4"
+            className="group py-5 flex justify-between items-center transition-all"
           >
             <div>
-              <p className="text-lg font-medium">{r.name}</p>
-              <p className="text-white/50 text-sm">
-                {r.date} • {r.time} • {r.guests} guests
+              <p className="text-[15px] font-medium">{r.name}</p>
+              <p className="text-[13px] text-white/40">
+                {r.date} · {r.time} · {r.guests} guests
               </p>
+              {r.note && (
+                <p className="text-[13px] text-white/50 mt-1 italic">
+                  “{r.note}”
+                </p>
+              )}
             </div>
 
-            {r.note && (
-              <div className="text-sm text-white/70 italic">
-                “{r.note}”
-              </div>
-            )}
-
             {actionable && (
-              <div className="flex items-center gap-6 text-sm pt-2">
+              <div className="flex gap-6 opacity-0 group-hover:opacity-100 transition">
                 <button
                   onClick={() => confirmReservation(r)}
-                  className="text-white/80 hover:text-white"
+                  className="text-[13px] text-white/80 hover:text-white"
                 >
                   Confirm & Message
                 </button>
+
                 <button
                   onClick={() => deleteReservation(r._id)}
-                  className="text-white/40 hover:text-red-400"
+                  className="text-[13px] text-white/30 hover:text-red-400"
                 >
                   Delete
                 </button>
