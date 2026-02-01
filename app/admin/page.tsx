@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 /* REQUIRED COMPONENTS */
+import WeeklyAnalytics from "./components/WeeklyAnalytics";
 import FadeIn from "./components/FadeIn";
 import InsightStrip from "./components/InsightStrip";
 import KpiStrip from "./components/KpiStrip";
@@ -136,7 +137,10 @@ export default function AdminPage() {
             todayReservations={todayReservations}
             pending={pending}
             confirmed={upcoming}
-          />
+          /><FadeIn delay={0.12}>
+  <WeeklyAnalytics reservations={reservations} />
+</FadeIn>
+
         </FadeIn>
 
         <FadeIn>
