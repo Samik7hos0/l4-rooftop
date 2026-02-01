@@ -13,7 +13,8 @@ import ReservationList from "./components/ReservationList";
 import ToolbarButton from "./components/ToolbarButton";
 import ToolbarModal from "./components/ToolbarModal";
 
-/* TYPES */
+/* ================= TYPES ================= */
+
 export type Reservation = {
   _id: string;
   name: string;
@@ -26,18 +27,32 @@ export type Reservation = {
   createdAt: string;
 };
 
-export type FilterType = "all" | "pending" | "confirmed";
+/**
+ * 🔑 SINGLE SOURCE OF TRUTH
+ * This MUST match ToolbarModal
+ */
+export type Filter =
+  | "all"
+  | "pending"
+  | "confirmed"
+  | "today"
+  | "tomorrow"
+  | "week"
+  | "past"
+  | "large"
+  | "special";
 
 export default function AdminPage() {
   const [authorized, setAuthorized] = useState(false);
   const [password, setPassword] = useState("");
-  const [reservations, setReservations] = useState<Reservation[]>([]);
 
+  const [reservations, setReservations] = useState<Reservation[]>([]);
   const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState<FilterType>("all");
+  const [filter, setFilter] = useState<Filter>("all");
   const [toolbarOpen, setToolbarOpen] = useState(false);
 
-  /* AUTH */
+  /* ================= AUTH ================= */
+
   function handleLogin() {
     if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
       setAuthorized(true);
@@ -46,13 +61,16 @@ export default function AdminPage() {
     }
   }
 
-  /* LOAD */
+  /* ================= LOAD ================= */
+
   async function loadReservations() {
     const res = await fetch("/api/reservations");
     const data: Reservation[] = await res.json();
+
     data.sort(
       (a, b) => +new Date(b.createdAt) - +new Date(a.createdAt)
     );
+
     setReservations(data);
   }
 
@@ -60,24 +78,31 @@ export default function AdminPage() {
     if (authorized) loadReservations();
   }, [authorized]);
 
-  /* ⌘K / CTRL+K */
+  /* ================= ⌘K ================= */
+
   useEffect(() => {
     function handler(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         setToolbarOpen(true);
       }
+      if (e.key === "Escape") {
+        setToolbarOpen(false);
+      }
     }
+
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
-  /* LOGIN */
+  /* ================= LOGIN ================= */
+
   if (!authorized) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-black text-white">
-        <div className="bg-white/[0.04] backdrop-blur-xl p-8 rounded-2xl w-[360px]">
-          <h1 className="text-xl mb-6 text-center">Admin Access</h1>
+      <main className="min-h-screen flex items-center justify-center bg-black text-white px-6">
+        <div className="w-full max-w-sm bg-white/[0.04] backdrop-blur-xl p-8 rounded-2xl">
+          <h1 className="text-xl text-center mb-6">Admin Access</h1>
+
           <input
             type="password"
             placeholder="Password"
@@ -85,6 +110,7 @@ export default function AdminPage() {
             onChange={(e) => setPassword(e.target.value)}
             className="w-full p-3 rounded bg-black border border-white/10 mb-4"
           />
+
           <button
             onClick={handleLogin}
             className="w-full py-2 rounded bg-white text-black font-medium"
@@ -96,18 +122,45 @@ export default function AdminPage() {
     );
   }
 
-  /* FILTERING */
+  /* ================= FILTERING ================= */
+
   const today = new Date().toISOString().slice(0, 10);
 
   const filtered = reservations.filter((r) => {
     const q = query.toLowerCase();
+
     const matchQuery =
       r.name.toLowerCase().includes(q) ||
       r.phone.includes(q) ||
       r.date.includes(q);
 
-    const matchFilter =
-      filter === "all" ? true : r.status === filter;
+    let matchFilter = true;
+
+    switch (filter) {
+      case "pending":
+        matchFilter = r.status === "pending";
+        break;
+      case "confirmed":
+        matchFilter = r.status === "confirmed";
+        break;
+      case "today":
+        matchFilter = r.date === today;
+        break;
+      case "past":
+        matchFilter = r.date < today;
+        break;
+      case "week":
+        matchFilter = r.date >= today;
+        break;
+      case "large":
+        matchFilter = r.guests >= 6;
+        break;
+      case "special":
+        matchFilter = Boolean(r.note);
+        break;
+      default:
+        matchFilter = true;
+    }
 
     return matchQuery && matchFilter;
   });
@@ -119,11 +172,14 @@ export default function AdminPage() {
   );
   const past = filtered.filter((r) => r.date < today);
 
+  /* ================= UI ================= */
+
   return (
     <main className="min-h-screen bg-black text-white">
-      {/* Floating Toolbar */}
+      {/* Floating Toolbar Trigger */}
       <ToolbarButton onOpen={() => setToolbarOpen(true)} />
 
+      {/* Toolbar Modal */}
       <ToolbarModal
         open={toolbarOpen}
         onClose={() => setToolbarOpen(false)}
@@ -133,6 +189,7 @@ export default function AdminPage() {
         setFilter={setFilter}
       />
 
+      {/* CONTENT */}
       <div className="max-w-7xl mx-auto px-6 md:px-16 py-16 space-y-24">
         <FadeIn>
           <header>
@@ -162,6 +219,7 @@ export default function AdminPage() {
             <SlotHeatmap reservations={todayList} />
             <TodaySummary reservations={todayList} />
           </div>
+
           <WeeklyAnalytics reservations={reservations} />
         </div>
 
