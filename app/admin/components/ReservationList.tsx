@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { Reservation } from "../page";
 
 type Props = {
@@ -15,27 +16,18 @@ export default function ReservationList({
   actionable,
   refresh,
 }: Props) {
-  /* CONFIRM */
   async function confirmReservation(r: Reservation) {
     if (r.notified) {
-      alert("WhatsApp confirmation already sent.");
+      alert("Customer already notified.");
       return;
     }
 
-    const ok = window.confirm(
-      `Send WhatsApp confirmation to ${r.name}?\n\nThis cannot be undone.`
-    );
-
-    if (!ok) return;
+    if (!window.confirm("Send WhatsApp confirmation to customer?")) return;
 
     await fetch("/api/reservations", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        id: r._id,
-        status: "confirmed",
-        notified: true,
-      }),
+      body: JSON.stringify({ id: r._id, notified: true }),
     });
 
     const msg = encodeURIComponent(
@@ -48,7 +40,6 @@ export default function ReservationList({
     refresh?.();
   }
 
-  /* DELETE */
   async function deleteReservation(id: string) {
     if (!window.confirm("Delete reservation?")) return;
 
@@ -73,34 +64,26 @@ export default function ReservationList({
 
       <div className="space-y-2">
         {reservations.map((r) => (
-          <div
+          <motion.div
             key={r._id}
-            tabIndex={0}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            whileHover={{ backgroundColor: "rgba(255,255,255,0.04)" }}
             className="
-              group relative
-              flex justify-between items-center
-              px-4 py-4 rounded-xl
-              border border-white/5
-              bg-white/[0.01]
-              transition-all
-              hover:bg-white/[0.05]
-              hover:border-white/10
-              focus:bg-white/[0.06]
-              focus:ring-1 focus:ring-white/20
-              outline-none
+              group
+              relative
+              flex
+              justify-between
+              items-center
+              px-4
+              py-4
+              rounded-xl
+              border
+              border-white/5
+              transition
             "
           >
-            {/* Accent */}
-            <span
-              className="
-                absolute left-0 top-2 bottom-2 w-[2px]
-                bg-transparent
-                group-hover:bg-green-400
-                transition
-              "
-            />
-
-            {/* Info */}
             <div className="space-y-1">
               <p className="text-[15px] font-medium text-white">
                 {r.name}
@@ -115,43 +98,23 @@ export default function ReservationList({
               )}
             </div>
 
-            {/* Actions */}
             {actionable && (
-              <div
-                className="
-                  flex gap-5 items-center
-                  text-[13px]
-                  opacity-0 translate-x-2
-                  group-hover:opacity-100
-                  group-hover:translate-x-0
-                  transition
-                "
-              >
+              <div className="flex gap-5 text-[13px] opacity-0 group-hover:opacity-100 transition">
                 <button
                   onClick={() => confirmReservation(r)}
-                  className="
-                    font-medium
-                    text-white/60
-                    hover:text-green-400
-                    transition
-                  "
+                  className="font-medium text-white/60 hover:text-green-400"
                 >
                   Confirm
                 </button>
-
                 <button
                   onClick={() => deleteReservation(r._id)}
-                  className="
-                    text-white/40
-                    hover:text-red-400
-                    transition
-                  "
+                  className="text-white/40 hover:text-red-400"
                 >
                   Delete
                 </button>
               </div>
             )}
-          </div>
+          </motion.div>
         ))}
       </div>
     </section>
