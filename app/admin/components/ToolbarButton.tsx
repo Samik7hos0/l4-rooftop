@@ -27,7 +27,7 @@ export default function ToolbarButton({ onOpen }: Props) {
         text-white
         shadow-lg
         hover:bg-white/20
-        transition
+        transition-premium
         active:scale-95
       "
     >

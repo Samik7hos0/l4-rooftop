@@ -84,7 +84,7 @@ export default function ReservationPage() {
           name="name"
           required
           placeholder="Full Name"
-          className="w-full rounded-md bg-neutral-950 border border-neutral-800 px-4 py-3"
+          className="w-full rounded-md bg-neutral-950 border border-neutral-800 px-4 py-3 transition-premium focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50"
         />
 
         {/* PHONE */}
@@ -92,7 +92,7 @@ export default function ReservationPage() {
           name="phone"
           required
           placeholder="Phone Number"
-          className="w-full rounded-md bg-neutral-950 border border-neutral-800 px-4 py-3"
+          className="w-full rounded-md bg-neutral-950 border border-neutral-800 px-4 py-3 transition-premium focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50"
         />
 
         {/* PREMIUM CALENDAR */}
@@ -155,11 +155,11 @@ export default function ReservationPage() {
                   key={p}
                   type="button"
                   onClick={() => setPeriod(p)}
-                  className={`flex-1 py-3 text-sm font-semibold transition ${
-                    period === p
-                      ? "bg-amber-500 text-neutral-900"
-                      : "bg-neutral-950 text-neutral-400 hover:bg-neutral-900"
-                  }`}
+className={`flex-1 py-3 text-sm font-semibold transition-premium ${
+                      period === p
+                        ? "bg-amber-500 text-neutral-900"
+                        : "bg-neutral-950 text-neutral-400 hover:bg-neutral-900"
+                    }`}
                 >
                   {p}
                 </button>
@@ -172,7 +172,7 @@ export default function ReservationPage() {
         <select
           name="guests"
           required
-          className="w-full rounded-md bg-neutral-950 border border-neutral-800 px-4 py-3"
+          className="w-full rounded-md bg-neutral-950 border border-neutral-800 px-4 py-3 transition-premium focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50"
         >
           <option value="">Number of Guests</option>
           {[1,2,3,4,5,6,7,8,9,10].map((n) => (
@@ -186,14 +186,14 @@ export default function ReservationPage() {
         <textarea
           name="note"
           placeholder="Special request (optional)"
-          className="w-full rounded-md bg-neutral-950 border border-neutral-800 px-4 py-3 min-h-[100px]"
+          className="w-full rounded-md bg-neutral-950 border border-neutral-800 px-4 py-3 min-h-[100px] transition-premium focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50"
         />
 
         {/* SUBMIT */}
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-amber-500 text-neutral-900 py-3 rounded-md font-semibold hover:bg-amber-400 transition disabled:opacity-50"
+          className="w-full bg-amber-500 text-neutral-900 py-3 rounded-md font-semibold hover:bg-amber-400 transition-premium disabled:opacity-50"
         >
           {loading ? "Booking..." : "Confirm Reservation"}
         </button>

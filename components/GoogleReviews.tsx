@@ -15,7 +15,7 @@ export default function GoogleReviews() {
         href="https://maps.app.goo.gl/5KvFyZHomBySzyPW8"
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-block rounded-md border border-neutral-700 px-6 py-3 text-sm hover:bg-neutral-900 transition"
+        className="inline-block rounded-md border border-neutral-700 px-6 py-3 text-sm hover:bg-neutral-900 transition-premium"
       >
         View & Write Reviews on Google
       </a>

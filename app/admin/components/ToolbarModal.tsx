@@ -42,7 +42,7 @@ export default function ToolbarModal({
           <p className="text-white/70 text-sm">Quick Tools</p>
           <button
             onClick={onClose}
-            className="hidden md:block text-white/40 hover:text-white"
+            className="hidden md:block text-white/40 hover:text-white transition-premium"
           >
             Esc
           </button>
@@ -75,7 +75,7 @@ export default function ToolbarModal({
               key={f}
               onClick={() => setFilter(f as FilterType)}
               className={`
-                px-3 py-1.5 rounded-md text-sm transition
+                px-3 py-1.5 rounded-md text-sm transition-premium
                 ${
                   filter === f
                     ? "bg-white text-black"

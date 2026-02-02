@@ -16,7 +16,7 @@ export default function WhatsAppButton() {
         text-white font-bold
         shadow-2xl
         hover:bg-green-400
-        transition
+        transition-premium
       "
     >
       WA

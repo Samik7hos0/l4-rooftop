@@ -14,7 +14,7 @@ export default function CallButton() {
         text-white font-bold
         shadow-2xl
         hover:bg-blue-400
-        transition
+        transition-premium
 
         lg:hidden
       "

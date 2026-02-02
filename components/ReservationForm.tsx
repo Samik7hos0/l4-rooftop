@@ -169,7 +169,7 @@ export default function ReservationForm() {
           {/* CTA */}
           <button
             disabled={loading}
-            className="w-full py-4 rounded-xl bg-gradient-to-r from-[var(--primary)] to-yellow-400 text-black font-semibold text-lg hover:opacity-90 transition"
+            className="w-full py-4 rounded-xl bg-gradient-to-r from-[var(--primary)] to-yellow-400 text-black font-semibold text-lg hover:opacity-90 transition-premium"
           >
             {loading ? "Booking..." : "Confirm Reservation"}
           </button>

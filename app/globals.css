@@ -1,3 +1,84 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+/* ---------- PREMIUM TRANSITIONS (Tailwind v4 @theme) ---------- */
+@theme {
+  /* Smooth, premium easing – feels responsive and polished */
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-premium: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-smooth: cubic-bezier(0.33, 1, 0.68, 1);
+  /* Standard durations for consistent feel */
+  --duration-fast: 150ms;
+  --duration-smooth: 300ms;
+  --duration-premium: 400ms;
+}
+
+/* ---------- GLOBAL BASE ---------- */
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+  html,
+  body {
+    @apply bg-black text-white antialiased;
+  }
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* ---------- PREMIUM TRANSITION UTILITY ---------- */
+@layer utilities {
+  .transition-premium {
+    transition-property: color, background-color, border-color, opacity, box-shadow, transform;
+    transition-duration: 300ms;
+    transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .transition-premium-fast {
+    transition-property: color, background-color, border-color, opacity, box-shadow, transform;
+    transition-duration: 150ms;
+    transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+/* ---------- FADE IN (premium easing) ---------- */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ---------- MODAL SCALE (premium) ---------- */
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.scale-in {
+  animation: scaleIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ---------- FORM INPUTS (premium transitions) ---------- */
+.premium-input {
+  @apply w-full rounded-xl bg-neutral-950 border border-neutral-800 px-4 py-3 text-white placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50;
+  transition: border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.premium-label {
+  @apply block text-sm text-neutral-400 mb-2;
+}

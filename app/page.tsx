@@ -19,14 +19,14 @@ export default function HomePage() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
           <a
             href="/reservation"
-            className="rounded-md bg-amber-500 px-6 py-3 text-sm font-medium text-neutral-900 hover:bg-amber-400 transition"
+            className="rounded-md bg-amber-500 px-6 py-3 text-sm font-medium text-neutral-900 hover:bg-amber-400 transition-premium"
           >
             Reserve a Table
           </a>
 
           <a
             href="/menu"
-            className="rounded-md border border-neutral-700 px-6 py-3 text-sm font-medium hover:bg-neutral-900 transition"
+            className="rounded-md border border-neutral-700 px-6 py-3 text-sm font-medium hover:bg-neutral-900 transition-premium"
           >
             Explore Menu
           </a>

@@ -19,7 +19,7 @@ export default function SearchHint() {
         border border-white/10
         text-sm text-white/70
         hover:bg-white/[0.14]
-        transition
+        transition-premium
       "
     >
       <span>Search</span>

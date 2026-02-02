@@ -17,7 +17,7 @@ export default function MapSection() {
             href="https://maps.app.goo.gl/5KvFyZHomBySzyPW8"
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded-md bg-amber-500 px-6 py-3 text-sm text-neutral-900 hover:bg-amber-400 transition"
+            className="rounded-md bg-amber-500 px-6 py-3 text-sm text-neutral-900 hover:bg-amber-400 transition-premium"
           >
             Get Directions
           </a>

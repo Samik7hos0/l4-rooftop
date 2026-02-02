@@ -36,10 +36,10 @@ export default function Gallery() {
           <button
             key={t}
             onClick={() => setTab(t as any)}
-            className={`px-6 py-2 rounded-full border ${
+            className={`px-6 py-2 rounded-full border transition-premium ${
               tab === t
                 ? "bg-[var(--primary)] text-black border-transparent"
-                : "border-zinc-600 text-zinc-300"
+                : "border-zinc-600 text-zinc-300 hover:border-zinc-500"
             }`}
           >
             {t === "ambience" ? "🌆 Ambience" : "🍽️ Food"}
@@ -59,9 +59,9 @@ export default function Gallery() {
               alt="Gallery image"
               width={500}
               height={500}
-              className="object-cover w-full h-full group-hover:scale-105 transition duration-500"
+              className="object-cover w-full h-full group-hover:scale-105 transition-premium duration-500"
             />
-            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition" />
+            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-premium duration-300" />
           </div>
         ))}
       </div>
@@ -70,7 +70,7 @@ export default function Gallery() {
       <div className="text-center mt-16">
         <a
           href="/reservation"
-          className="inline-block bg-[var(--primary)] text-black px-8 py-4 rounded-lg font-semibold hover:opacity-90"
+          className="inline-block bg-[var(--primary)] text-black px-8 py-4 rounded-lg font-semibold hover:opacity-90 transition-premium"
         >
           Reserve a Table
         </a>

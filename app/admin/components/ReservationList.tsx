@@ -75,7 +75,7 @@ export default function ReservationList({
               px-4 py-4 rounded-xl
               border border-white/5
               bg-white/[0.01]
-              transition
+              transition-premium
               hover:bg-white/[0.05]
               hover:border-white/10
             "
@@ -98,7 +98,7 @@ export default function ReservationList({
                   onClick={() => confirmReservation(r)}
                   className="
                     text-white/60 font-medium
-                    hover:text-green-400 transition
+                    hover:text-green-400 transition-premium
                   "
                 >
                   Confirm
@@ -108,7 +108,7 @@ export default function ReservationList({
                   onClick={() => deleteReservation(r._id)}
                   className="
                     text-white/40
-                    hover:text-red-400 transition
+                    hover:text-red-400 transition-premium
                   "
                 >
                   Delete

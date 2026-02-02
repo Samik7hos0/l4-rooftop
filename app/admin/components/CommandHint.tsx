@@ -18,7 +18,7 @@ export default function CommandHint() {
         rounded-full px-4 py-2
         text-sm text-white/70
         hover:bg-white/[0.14]
-        transition
+        transition-premium
       "
     >
       ⌘K

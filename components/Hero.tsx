@@ -20,14 +20,14 @@ export default function Hero() {
         <div className="flex justify-center gap-4">
           <Link
             href="/reservation"
-            className="bg-[var(--primary)] text-black px-8 py-4 rounded-lg font-semibold hover:opacity-90 transition"
+            className="bg-[var(--primary)] text-black px-8 py-4 rounded-lg font-semibold hover:opacity-90 transition-premium"
           >
             Reserve a Table
           </Link>
 
           <Link
             href="/menu"
-            className="border border-zinc-600 px-8 py-4 rounded-lg hover:bg-zinc-800 transition"
+            className="border border-zinc-600 px-8 py-4 rounded-lg hover:bg-zinc-800 transition-premium"
           >
             Explore Menu
           </Link>

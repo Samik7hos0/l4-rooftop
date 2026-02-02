@@ -27,7 +27,7 @@ export default function FilterBar({
           onClick={() => onChange(f)}
           className={`
             px-3 py-1.5 rounded-full text-xs capitalize
-            transition
+            transition-premium
             ${
               value === f
                 ? "bg-white text-black"
