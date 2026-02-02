@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { Reservation } from "../page";
 
 type Props = {
@@ -16,13 +15,17 @@ export default function ReservationList({
   actionable,
   refresh,
 }: Props) {
+  /* ---------- CONFIRM ---------- */
   async function confirmReservation(r: Reservation) {
     if (r.notified) {
-      alert("Customer already notified.");
+      alert("Customer has already been notified.");
       return;
     }
 
-    if (!window.confirm("Send WhatsApp confirmation to customer?")) return;
+    const ok = window.confirm(
+      "Send WhatsApp confirmation to this customer?"
+    );
+    if (!ok) return;
 
     await fetch("/api/reservations", {
       method: "PATCH",
@@ -40,8 +43,10 @@ export default function ReservationList({
     refresh?.();
   }
 
+  /* ---------- DELETE ---------- */
   async function deleteReservation(id: string) {
-    if (!window.confirm("Delete reservation?")) return;
+    const ok = window.confirm("Delete this reservation?");
+    if (!ok) return;
 
     await fetch("/api/reservations", {
       method: "DELETE",
@@ -64,12 +69,15 @@ export default function ReservationList({
 
       <div className="space-y-2">
         {reservations.map((r) => (
-          <motion.div
+          <div
             key={r._id}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.25, ease: "easeOut" }}
-            whileHover={{ backgroundColor: "rgba(255,255,255,0.04)" }}
+            tabIndex={actionable ? 0 : -1}
+            onKeyDown={(e) => {
+              if (!actionable) return;
+              if (e.key === "Enter") confirmReservation(r);
+              if (e.key === "Delete" || e.key === "Backspace")
+                deleteReservation(r._id);
+            }}
             className="
               group
               relative
@@ -81,9 +89,34 @@ export default function ReservationList({
               rounded-xl
               border
               border-white/5
+              bg-white/[0.01]
               transition
+              duration-150
+              ease-out
+              hover:bg-white/[0.04]
+              hover:border-white/10
+              focus:outline-none
+              focus:ring-1
+              focus:ring-white/20
             "
           >
+            {/* Apple-style left accent */}
+            <span
+              className="
+                absolute
+                left-0
+                top-2
+                bottom-2
+                w-[2px]
+                rounded-full
+                bg-transparent
+                group-hover:bg-white/20
+                group-focus:bg-white/30
+                transition
+              "
+            />
+
+            {/* Info */}
             <div className="space-y-1">
               <p className="text-[15px] font-medium text-white">
                 {r.name}
@@ -98,23 +131,50 @@ export default function ReservationList({
               )}
             </div>
 
+            {/* Actions */}
             {actionable && (
-              <div className="flex gap-5 text-[13px] opacity-0 group-hover:opacity-100 transition">
+              <div
+                className="
+                  flex
+                  gap-5
+                  text-[13px]
+                  items-center
+                  opacity-100
+                  md:opacity-0
+                  md:translate-x-2
+                  md:group-hover:opacity-100
+                  md:group-hover:translate-x-0
+                  md:group-focus-within:opacity-100
+                  md:group-focus-within:translate-x-0
+                  transition-all
+                  duration-150
+                "
+              >
                 <button
                   onClick={() => confirmReservation(r)}
-                  className="font-medium text-white/60 hover:text-green-400"
+                  className="
+                    font-medium
+                    text-white/70
+                    hover:text-green-400
+                    transition
+                  "
                 >
                   Confirm
                 </button>
+
                 <button
                   onClick={() => deleteReservation(r._id)}
-                  className="text-white/40 hover:text-red-400"
+                  className="
+                    text-white/40
+                    hover:text-red-400
+                    transition
+                  "
                 >
                   Delete
                 </button>
               </div>
             )}
-          </motion.div>
+          </div>
         ))}
       </div>
     </section>
