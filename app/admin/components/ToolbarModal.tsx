@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { FilterType } from "../page";
 
 type Props = {
@@ -19,11 +20,28 @@ export default function ToolbarModal({
   filter,
   setFilter,
 }: Props) {
+  /* ESC close (PC only) */
+  useEffect(() => {
+    if (!open) return;
+
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
   if (!open) return null;
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      className="
+        fixed inset-0 z-50
+        flex items-center justify-center
+        bg-black/60 backdrop-blur-sm
+        transition-opacity
+      "
       onClick={onClose}
     >
       <div
@@ -35,14 +53,19 @@ export default function ToolbarModal({
           border border-white/10
           shadow-2xl
           p-6 space-y-5
+          animate-in
+          fade-in
+          zoom-in-95
         "
       >
         {/* Header */}
         <div className="flex items-center justify-between">
           <p className="text-white/70 text-sm">Quick Tools</p>
+
+          {/* Esc (desktop only) */}
           <button
             onClick={onClose}
-            className="text-white/40 hover:text-white transition"
+            className="hidden md:block text-xs text-white/40 hover:text-white transition"
           >
             Esc
           </button>
@@ -58,7 +81,8 @@ export default function ToolbarModal({
             w-full px-4 py-3 rounded-lg
             bg-black border border-white/15
             text-white placeholder-white/40
-            focus:outline-none focus:ring-1 focus:ring-white/30
+            focus:outline-none
+            focus:ring-1 focus:ring-white/30
           "
         />
 
@@ -93,7 +117,14 @@ export default function ToolbarModal({
         {/* Mobile Close */}
         <button
           onClick={onClose}
-          className="md:hidden w-full py-2 rounded-lg bg-white/10 text-white/80 hover:bg-white/20 transition"
+          className="
+            md:hidden w-full py-2
+            rounded-lg
+            bg-white/10
+            text-white/80
+            hover:bg-white/20
+            transition
+          "
         >
           Close
         </button>

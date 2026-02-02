@@ -1,14 +1,35 @@
 "use client";
 
-export default function ToolbarButton({
-  onOpen,
-}: {
+type Props = {
   onOpen: () => void;
-}) {
+};
+
+export default function ToolbarButton({ onOpen }: Props) {
   return (
     <button
       onClick={onOpen}
-      className="fixed bottom-6 right-6 z-40 rounded-full bg-white/10 backdrop-blur border border-white/10 px-4 py-2 text-sm text-white hover:bg-white/20"
+      aria-label="Open quick tools"
+      className="
+        fixed
+        bottom-6
+        right-6
+        z-50
+        flex
+        items-center
+        justify-center
+        h-12
+        w-12
+        rounded-full
+        bg-white/10
+        backdrop-blur-xl
+        border
+        border-white/15
+        text-white
+        shadow-lg
+        hover:bg-white/20
+        transition
+        active:scale-95
+      "
     >
       ⌘K
     </button>
