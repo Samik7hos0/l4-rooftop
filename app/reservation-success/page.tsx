@@ -80,7 +80,7 @@ export default function ReservationSuccessPage() {
 
         <Link
           href="/"
-          className="inline-block bg-amber-500 text-neutral-900 px-6 py-3 rounded-md font-semibold hover:bg-amber-400 transition-premium"
+          className="inline-flex items-center justify-center min-h-[48px] px-6 py-3 rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] font-semibold hover:opacity-90 transition-premium focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-black"
         >
           Back to Home
         </Link>

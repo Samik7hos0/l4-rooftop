@@ -21,28 +21,31 @@ export default function Gallery() {
   const images = tab === "ambience" ? AMBIENCE : FOOD;
 
   return (
-    <section className="max-w-7xl mx-auto px-6 py-20">
-      <h1 className="text-4xl text-center mb-6 text-[var(--primary)]">
-        Gallery
-      </h1>
-
-      <p className="text-center text-zinc-400 mb-10">
-        A glimpse of our rooftop ambience and signature dishes
-      </p>
+    <section className="max-w-7xl mx-auto px-[var(--space-page-x)] py-12 sm:py-16 lg:py-20">
+      <header className="text-center mb-10 lg:mb-12">
+        <h1 className="text-3xl sm:text-4xl font-semibold text-[var(--primary)] tracking-tight">
+          Gallery
+        </h1>
+        <p className="mt-2 text-neutral-500 text-sm sm:text-base">
+          A glimpse of our rooftop ambience and signature dishes
+        </p>
+      </header>
 
       {/* Tabs */}
       <div className="flex justify-center gap-4 mb-12">
-        {["ambience", "food"].map((t) => (
+        {(["ambience", "food"] as const).map((t) => (
           <button
             key={t}
-            onClick={() => setTab(t as any)}
-            className={`px-6 py-2 rounded-full border transition-premium ${
+            type="button"
+            onClick={() => setTab(t)}
+            aria-pressed={tab === t}
+            className={`min-h-[44px] px-6 py-2.5 rounded-full border transition-premium focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-black ${
               tab === t
-                ? "bg-[var(--primary)] text-black border-transparent"
-                : "border-zinc-600 text-zinc-300 hover:border-zinc-500"
+                ? "bg-[var(--primary)] text-[var(--primary-foreground)] border-transparent"
+                : "border-neutral-600 text-neutral-400 hover:border-neutral-500 hover:text-neutral-300"
             }`}
           >
-            {t === "ambience" ? "🌆 Ambience" : "🍽️ Food"}
+            {t === "ambience" ? "Ambience" : "Food"}
           </button>
         ))}
       </div>
@@ -70,7 +73,7 @@ export default function Gallery() {
       <div className="text-center mt-16">
         <a
           href="/reservation"
-          className="inline-block bg-[var(--primary)] text-black px-8 py-4 rounded-lg font-semibold hover:opacity-90 transition-premium"
+          className="inline-flex items-center justify-center min-h-[48px] px-8 py-4 rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] font-semibold hover:opacity-90 transition-premium focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-black"
         >
           Reserve a Table
         </a>

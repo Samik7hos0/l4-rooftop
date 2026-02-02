@@ -16,44 +16,44 @@ export default function ReservationList({
   refresh,
 }: Props) {
   async function confirmReservation(r: Reservation) {
+    if (r.notified) {
+      refresh?.();
+      return;
+    }
     if (
-      r.notified ||
       !window.confirm(
         `Send WhatsApp confirmation to ${r.name}?\n\nThis will send a message.`
       )
     )
       return;
 
-    await fetch("/api/reservations", {
+    const res = await fetch("/api/reservations", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        id: r._id,
-        status: "confirmed",
-        notified: true,
-      }),
+      body: JSON.stringify({ id: r._id }),
     });
 
-    const msg = encodeURIComponent(
-      `Hello ${r.name}, your reservation at L4 Rooftop is confirmed.\n\n${r.date} • ${r.time}\nGuests: ${r.guests}${
-        r.note ? `\nRequest: ${r.note}` : ""
-      }`
-    );
-
-    window.open(`https://wa.me/91${r.phone}?text=${msg}`, "_blank");
-    refresh?.();
+    if (res.ok) {
+      const msg = encodeURIComponent(
+        `Hello ${r.name}, your reservation at L4 Rooftop is confirmed.\n\n${r.date} • ${r.time}\nGuests: ${r.guests}${
+          r.note ? `\nRequest: ${r.note}` : ""
+        }`
+      );
+      window.open(`https://wa.me/91${r.phone}?text=${msg}`, "_blank");
+      refresh?.();
+    }
   }
 
   async function deleteReservation(id: string) {
     if (!window.confirm("Delete reservation?")) return;
 
-    await fetch("/api/reservations", {
+    const res = await fetch("/api/reservations", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id }),
     });
 
-    refresh?.();
+    if (res.ok) refresh?.();
   }
 
   return (
@@ -93,23 +93,20 @@ export default function ReservationList({
             </div>
 
             {actionable && (
-              <div className="flex gap-5 text-[13px]">
+              <div className="flex gap-2 sm:gap-4 shrink-0">
                 <button
+                  type="button"
                   onClick={() => confirmReservation(r)}
-                  className="
-                    text-white/60 font-medium
-                    hover:text-green-400 transition-premium
-                  "
+                  className="min-h-[44px] min-w-[44px] sm:min-w-0 sm:px-4 inline-flex items-center justify-center rounded-lg text-[13px] font-medium text-white/70 hover:text-green-400 transition-premium focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                  aria-label={`Confirm reservation for ${r.name}`}
                 >
                   Confirm
                 </button>
-
                 <button
+                  type="button"
                   onClick={() => deleteReservation(r._id)}
-                  className="
-                    text-white/40
-                    hover:text-red-400 transition-premium
-                  "
+                  className="min-h-[44px] min-w-[44px] sm:min-w-0 sm:px-4 inline-flex items-center justify-center rounded-lg text-[13px] text-white/50 hover:text-red-400 transition-premium focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                  aria-label={`Delete reservation for ${r.name}`}
                 >
                   Delete
                 </button>

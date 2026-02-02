@@ -1,17 +1,22 @@
 export const metadata = {
   title: "Menu",
   description:
-    "Explore the curated menu at L4 Rooftop Restaurant featuring Indian, Continental and signature dishes.",
+    "Explore the curated menu at L4 Rooftop Restaurant – Indian, Continental and signature dishes.",
 };
 
 import MenuGrid from "@/components/MenuGrid";
 
 export default function MenuPage() {
   return (
-    <main className="max-w-6xl mx-auto px-6 py-20">
-      <h1 className="text-4xl mb-10 text-[var(--primary)]">
-        Our Menu
-      </h1>
+    <main className="min-h-screen max-w-6xl mx-auto px-[var(--space-page-x)] py-12 sm:py-16 lg:py-20" role="main">
+      <header className="mb-10 lg:mb-12">
+        <h1 className="text-3xl sm:text-4xl font-semibold text-[var(--primary)] tracking-tight">
+          Our Menu
+        </h1>
+        <p className="mt-2 text-neutral-500 text-sm sm:text-base">
+          Curated dishes for rooftop dining
+        </p>
+      </header>
       <MenuGrid />
     </main>
   );

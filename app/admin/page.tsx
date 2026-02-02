@@ -88,22 +88,41 @@ export default function AdminPage() {
   /* LOGIN */
   if (!authorized) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-black text-white">
-        <div className="bg-white/[0.04] backdrop-blur-xl p-8 rounded-2xl w-[360px]">
-          <h1 className="text-xl mb-6 text-center">Admin Access</h1>
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-3 rounded bg-black border border-white/10 mb-4"
-          />
-          <button
-            onClick={handleLogin}
-            className="w-full py-2 rounded bg-white text-black font-medium"
+      <main
+        className="min-h-screen flex items-center justify-center bg-black text-white px-4"
+        role="main"
+      >
+        <div className="w-full max-w-sm bg-white/[0.04] backdrop-blur-xl p-6 sm:p-8 rounded-2xl border border-white/5">
+          <h1 className="text-xl font-semibold mb-6 text-center tracking-tight">
+            Admin Access
+          </h1>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleLogin();
+            }}
+            className="space-y-4"
           >
-            Continue
-          </button>
+            <label htmlFor="admin-password" className="sr-only">
+              Password
+            </label>
+            <input
+              id="admin-password"
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full min-h-[48px] px-4 rounded-xl bg-black border border-white/10 text-white placeholder:text-white/40 transition-premium focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/20"
+              autoComplete="current-password"
+              autoFocus
+            />
+            <button
+              type="submit"
+              className="w-full min-h-[48px] rounded-xl bg-white text-black font-semibold hover:opacity-90 transition-premium focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+            >
+              Continue
+            </button>
+          </form>
         </div>
       </main>
     );

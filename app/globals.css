@@ -1,29 +1,56 @@
 @import "tailwindcss";
 
-/* ---------- PREMIUM TRANSITIONS (Tailwind v4 @theme) ---------- */
+/* ---------- DESIGN SYSTEM (production-ready) ---------- */
 @theme {
-  /* Smooth, premium easing – feels responsive and polished */
   --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-premium: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-out-smooth: cubic-bezier(0.33, 1, 0.68, 1);
-  /* Standard durations for consistent feel */
   --duration-fast: 150ms;
   --duration-smooth: 300ms;
   --duration-premium: 400ms;
+}
+
+:root {
+  /* Brand – warm amber, high contrast on dark */
+  --primary: #f59e0b;
+  --primary-hover: #fbbf24;
+  --primary-foreground: #1c1917;
+  /* Spacing scale (align with Tailwind) */
+  --space-page-x: clamp(1rem, 4vw, 1.5rem);
+  --space-section: clamp(3rem, 8vw, 5rem);
+  --space-block: clamp(1.5rem, 4vw, 2rem);
+  /* Typography */
+  --text-balance: balance;
+  /* Focus – visible for keyboard, minimal for mouse */
+  --focus-ring: 2px solid var(--primary);
+  --focus-offset: 2px;
 }
 
 /* ---------- GLOBAL BASE ---------- */
 @layer base {
   html {
     @apply scroll-smooth;
+    text-size-adjust: 100%;
   }
-  html,
   body {
     @apply bg-black text-white antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
   * {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+  /* Accessible focus – only when using keyboard */
+  :focus {
+    outline: none;
+  }
+  :focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-offset);
+  }
+  /* Touch targets – min 44px for interactive elements */
+  button, a, [role="button"], input, select, textarea {
+    @apply touch-manipulation;
   }
 }
 
@@ -75,7 +102,7 @@
 
 /* ---------- FORM INPUTS (premium transitions) ---------- */
 .premium-input {
-  @apply w-full rounded-xl bg-neutral-950 border border-neutral-800 px-4 py-3 text-white placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50;
+  @apply w-full min-h-[44px] rounded-xl bg-neutral-950 border border-neutral-800 px-4 py-3 text-white placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2 focus:ring-offset-black focus:border-[var(--primary)];
   transition: border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 

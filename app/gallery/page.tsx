@@ -7,5 +7,9 @@ export const metadata = {
 import Gallery from "@/components/Gallery";
 
 export default function GalleryPage() {
-  return <Gallery />;
+  return (
+    <main className="min-h-screen" role="main">
+      <Gallery />
+    </main>
+  );
 }
