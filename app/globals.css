@@ -1,3 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---------- GLOBAL RESET ---------- */
+html,
+body {
+  background-color: #000;
+  color: #fff;
+}
+
+/* ---------- SMOOTH TEXT ---------- */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ---------- FADE IN ---------- */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -13,6 +31,7 @@
   animation: fadeIn 0.35s ease-out both;
 }
 
+/* ---------- MODAL SCALE ---------- */
 @keyframes scaleIn {
   from {
     opacity: 0;
