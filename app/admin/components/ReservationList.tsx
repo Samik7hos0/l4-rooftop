@@ -15,15 +15,14 @@ export default function ReservationList({
   actionable,
   refresh,
 }: Props) {
-  /* ---------- CONFIRM ---------- */
   async function confirmReservation(r: Reservation) {
     if (r.notified) {
-      alert("Customer has already been notified.");
+      alert("Customer already notified.");
       return;
     }
 
     const ok = window.confirm(
-      "Send WhatsApp confirmation to this customer?"
+      "Send WhatsApp confirmation to the customer?"
     );
     if (!ok) return;
 
@@ -43,7 +42,6 @@ export default function ReservationList({
     refresh?.();
   }
 
-  /* ---------- DELETE ---------- */
   async function deleteReservation(id: string) {
     const ok = window.confirm("Delete this reservation?");
     if (!ok) return;
@@ -72,12 +70,6 @@ export default function ReservationList({
           <div
             key={r._id}
             tabIndex={actionable ? 0 : -1}
-            onKeyDown={(e) => {
-              if (!actionable) return;
-              if (e.key === "Enter") confirmReservation(r);
-              if (e.key === "Delete" || e.key === "Backspace")
-                deleteReservation(r._id);
-            }}
             className="
               group
               relative
@@ -100,7 +92,7 @@ export default function ReservationList({
               focus:ring-white/20
             "
           >
-            {/* Apple-style left accent */}
+            {/* Left accent */}
             <span
               className="
                 absolute
@@ -111,7 +103,6 @@ export default function ReservationList({
                 rounded-full
                 bg-transparent
                 group-hover:bg-white/20
-                group-focus:bg-white/30
                 transition
               "
             />
@@ -138,37 +129,25 @@ export default function ReservationList({
                   flex
                   gap-5
                   text-[13px]
-                  items-center
                   opacity-100
                   md:opacity-0
                   md:translate-x-2
                   md:group-hover:opacity-100
                   md:group-hover:translate-x-0
-                  md:group-focus-within:opacity-100
-                  md:group-focus-within:translate-x-0
                   transition-all
                   duration-150
                 "
               >
                 <button
                   onClick={() => confirmReservation(r)}
-                  className="
-                    font-medium
-                    text-white/70
-                    hover:text-green-400
-                    transition
-                  "
+                  className="text-white/70 hover:text-green-400"
                 >
                   Confirm
                 </button>
 
                 <button
                   onClick={() => deleteReservation(r._id)}
-                  className="
-                    text-white/40
-                    hover:text-red-400
-                    transition
-                  "
+                  className="text-white/40 hover:text-red-400"
                 >
                   Delete
                 </button>

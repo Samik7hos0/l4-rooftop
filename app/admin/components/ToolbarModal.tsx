@@ -35,23 +35,19 @@ export default function ToolbarModal({
           border border-white/10
           shadow-2xl
           p-6 space-y-5
-          animate-scaleIn
+          scale-in
         "
       >
-        {/* Header */}
         <div className="flex items-center justify-between">
           <p className="text-white/70 text-sm">Quick Tools</p>
-
-          {/* Desktop ESC */}
           <button
             onClick={onClose}
-            className="hidden md:block text-white/40 hover:text-white transition"
+            className="hidden md:block text-white/40 hover:text-white"
           >
             Esc
           </button>
         </div>
 
-        {/* Search */}
         <input
           autoFocus
           value={query}
@@ -65,7 +61,6 @@ export default function ToolbarModal({
           "
         />
 
-        {/* Filters */}
         <div className="flex flex-wrap gap-2">
           {[
             "all",
@@ -93,10 +88,9 @@ export default function ToolbarModal({
           ))}
         </div>
 
-        {/* Mobile close */}
         <button
           onClick={onClose}
-          className="md:hidden w-full py-2 rounded-lg bg-white/10 text-white/80 hover:bg-white/20 transition"
+          className="md:hidden w-full py-2 rounded-lg bg-white/10 text-white/80 hover:bg-white/20"
         >
           Close
         </button>
