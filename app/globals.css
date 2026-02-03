@@ -241,3 +241,56 @@ select:focus {
   background: rgba(255, 255, 255, 0.22);
   color: #fff;
 }
+/* =====================================
+   Hero Micro-Motion (Apple-style)
+   ===================================== */
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.motion-fade-up {
+  animation: fadeUp 0.8s var(--ease-premium) both;
+}
+
+.motion-delay-1 {
+  animation-delay: 120ms;
+}
+
+.motion-delay-2 {
+  animation-delay: 240ms;
+}
+
+.motion-delay-3 {
+  animation-delay: 360ms;
+}
+
+/* CTA micro depth */
+.cta-primary {
+  background: white;
+  color: black;
+  box-shadow: 0 10px 30px rgba(255, 255, 255, 0.08);
+}
+
+.cta-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 36px rgba(255, 255, 255, 0.12);
+}
+
+.cta-secondary:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Respect accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .motion-fade-up {
+    animation: none;
+  }
+}

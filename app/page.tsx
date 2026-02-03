@@ -7,59 +7,45 @@ export default function HomePage() {
     <main className="bg-black text-white">
       {/* ================= HERO ================= */}
       <section className="min-h-[100vh] flex items-center justify-center px-6">
-        <div className="max-w-4xl text-center space-y-8">
-          <p className="text-xs tracking-[0.3em] text-white/50 uppercase">
-            Rooftop Dining • Nightlife • Experiences
-          </p>
+  <div className="max-w-4xl text-center space-y-8">
+    
+    <p className="text-sm tracking-widest text-white/50 uppercase motion-fade-up">
+      Rooftop Dining • Nightlife • Experiences
+    </p>
 
-          <h1 className="text-4xl md:text-6xl font-semibold tracking-tight">
-            L4 Rooftop
-            <br />
-            <span className="text-white/60">
-              Where evenings feel elevated
-            </span>
-          </h1>
+    <h1 className="text-4xl md:text-6xl font-semibold tracking-tight motion-fade-up motion-delay-1">
+      L4 Rooftop
+      <br />
+      <span className="text-white/60">
+        Where evenings feel elevated
+      </span>
+    </h1>
 
-          <p className="max-w-2xl mx-auto text-lg text-white/65">
-            A premium rooftop destination blending cuisine, skyline views,
-            curated music, and an atmosphere designed for unforgettable
-            nights.
-          </p>
+    <p className="max-w-2xl mx-auto text-lg text-white/70 motion-fade-up motion-delay-2">
+      A premium rooftop destination blending cuisine, skyline views,
+      curated music, and an atmosphere designed for unforgettable
+      nights.
+    </p>
 
-          {/* CTA */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
-            <Link
-              href="/reservation"
-              className="
-                inline-flex items-center justify-center
-                px-8 py-3 rounded-full
-                bg-white/10 text-white font-medium
-                border border-white/15
-                backdrop-blur
-                hover:bg-white/15
-                transition-premium
-              "
-            >
-              Reserve a Table
-            </Link>
+    <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6 motion-fade-up motion-delay-3">
+      <Link
+        href="/reservation"
+        className="px-8 py-3 rounded-full font-medium transition-premium cta-primary"
+      >
+        Reserve a Table
+      </Link>
 
-            <Link
-              href="/menu"
-              className="
-                inline-flex items-center justify-center
-                px-8 py-3 rounded-full
-                border border-white/15
-                text-white/70
-                hover:text-white
-                hover:bg-white/5
-                transition-premium
-              "
-            >
-              View Menu
-            </Link>
-          </div>
-        </div>
-      </section>
+      <Link
+        href="/menu"
+        className="px-8 py-3 rounded-full border border-white/20 text-white transition-premium cta-secondary"
+      >
+        View Menu
+      </Link>
+    </div>
+
+  </div>
+</section>
+
 
       {/* ================= EXPERIENCE ================= */}
       <section className="py-28 px-6 border-t border-white/5">
