@@ -8,7 +8,9 @@ import "react-day-picker/dist/style.css";
 /* ================= CONFIG ================= */
 
 const HOURS = ["12","1","2","3","4","5","6","7","8","9","10","11"];
-const MINUTES = Array.from({ length: 60 }, (_, i) => String(i + 1).padStart(2, "0"));
+const MINUTES = Array.from({ length: 60 }, (_, i) =>
+  String(i + 1).padStart(2, "0")
+);
 const DEFAULT_GUESTS = [1,2,3,4,5,6,7,8,9,10];
 
 /* ================= PAGE ================= */
@@ -25,7 +27,7 @@ export default function ReservationPage() {
   const [period, setPeriod] = useState<"AM" | "PM">("PM");
 
   const [guests, setGuests] = useState<number | "more">(1);
-  const [customGuests, setCustomGuests] = useState<number>(11);
+  const [customGuests, setCustomGuests] = useState(11);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -38,16 +40,15 @@ export default function ReservationPage() {
 
     setLoading(true);
 
-    const form = e.currentTarget;
-    const formData = new FormData(form);
+    const formData = new FormData(e.currentTarget);
 
     const payload = {
-      name: (formData.get("name") as string)?.trim(),
-      phone: (formData.get("phone") as string)?.trim(),
+      name: String(formData.get("name")).trim(),
+      phone: String(formData.get("phone")).trim(),
       date: format(date, "yyyy-MM-dd"),
       time: `${hour}:${minute} ${period}`,
       guests: guestCount,
-      note: (formData.get("note") as string)?.trim() || "",
+      note: String(formData.get("note") || "").trim(),
     };
 
     try {
@@ -58,6 +59,7 @@ export default function ReservationPage() {
       });
 
       if (!res.ok) throw new Error();
+
       sessionStorage.setItem("reservation", JSON.stringify(payload));
       window.location.href = "/reservation-success";
     } catch {
@@ -68,20 +70,20 @@ export default function ReservationPage() {
   }
 
   const input =
-    "w-full min-h-[44px] rounded-xl bg-neutral-950 border border-neutral-800 px-4 py-3 text-white placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-white/20";
+    "w-full min-h-[44px] rounded-xl bg-neutral-950 border border-neutral-800 px-4 py-3 text-white placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-white/20 transition-premium";
 
   return (
     <main className="min-h-screen bg-black flex justify-center px-6 py-16">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-xl bg-neutral-900/80 border border-neutral-800 rounded-3xl p-8 space-y-6"
+        className="motion card-premium w-full max-w-xl rounded-3xl p-8 space-y-6"
       >
         {/* HEADER */}
         <header className="text-center space-y-1">
-          <h1 className="text-3xl font-semibold tracking-tight">
+          <h1 className="motion text-3xl font-semibold tracking-tight">
             Reserve a Table
           </h1>
-          <p className="text-sm text-neutral-400">
+          <p className="motion motion-1 text-sm text-neutral-400">
             Open 12:00 PM – 11:00 PM
           </p>
         </header>
@@ -99,7 +101,12 @@ export default function ReservationPage() {
 
         {/* PHONE */}
         <Field label="Phone Number">
-          <input name="phone" required placeholder="10-digit mobile number" className={input} />
+          <input
+            name="phone"
+            required
+            placeholder="10-digit mobile number"
+            className={input}
+          />
         </Field>
 
         {/* DATE */}
@@ -135,7 +142,7 @@ export default function ReservationPage() {
                   key={p}
                   type="button"
                   onClick={() => setPeriod(p)}
-                  className={`flex-1 py-3 text-sm font-medium transition
+                  className={`flex-1 py-3 text-sm font-medium transition-premium
                     ${period === p
                       ? "bg-white text-black"
                       : "bg-neutral-950 text-white/60 hover:bg-neutral-900"}

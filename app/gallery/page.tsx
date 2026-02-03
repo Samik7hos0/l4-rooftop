@@ -14,38 +14,29 @@ const images = [
 export default function GalleryPage() {
   return (
     <main className="px-6 md:px-16 py-20 max-w-7xl mx-auto">
-      {/* Header */}
+      {/* HEADER */}
       <header className="mb-14 max-w-2xl">
-        <h1 className="text-3xl md:text-5xl font-semibold tracking-tight">
+        <h1 className="motion text-3xl md:text-5xl font-semibold tracking-tight">
           Moments at Level Four
         </h1>
-        <p className="mt-3 text-white/50 text-lg">
+        <p className="motion motion-1 mt-3 text-white/50 text-lg">
           Rooftop evenings, crafted plates, and the city after sunset.
         </p>
       </header>
 
-      {/* Gallery Grid */}
+      {/* GRID */}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {images.map((src, i) => (
           <div
             key={i}
-            className="
-              group relative overflow-hidden rounded-2xl
-              bg-white/5
-              transition
-              hover:shadow-2xl
-            "
+            className={`motion motion-${(i % 4) + 1} card-premium overflow-hidden`}
           >
             <Image
               src={src}
               alt="L4 Rooftop Gallery"
               width={800}
               height={600}
-              className="
-                w-full h-full object-cover
-                transition duration-500
-                group-hover:scale-[1.04]
-              "
+              className="w-full h-full object-cover transition duration-500 hover:scale-[1.04]"
               priority={i < 3}
             />
           </div>
