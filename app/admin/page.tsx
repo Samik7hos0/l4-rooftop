@@ -12,10 +12,10 @@ import WeeklyAnalytics from "./components/WeeklyAnalytics";
 import ReservationList from "./components/ReservationList";
 import ToolbarButton from "./components/ToolbarButton";
 import ToolbarModal from "./components/ToolbarModal";
+import WhatsAppTemplateEditor from "./components/WhatsAppTemplateEditor";
 
 /* ================= TYPES ================= */
 
-/** ✅ FIX #1 — add notified */
 export type Reservation = {
   _id: string;
   name: string;
@@ -26,10 +26,9 @@ export type Reservation = {
   note?: string;
   status: "pending" | "confirmed";
   createdAt: string;
-  notified?: boolean; // 🔥 REQUIRED
+  notified?: boolean;
 };
 
-/** ✅ FIX #2 — export FilterType */
 export type FilterType =
   | "all"
   | "today"
@@ -96,6 +95,7 @@ export default function AdminPage() {
           <h1 className="text-xl font-semibold mb-6 text-center tracking-tight">
             Admin Access
           </h1>
+
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -103,22 +103,18 @@ export default function AdminPage() {
             }}
             className="space-y-4"
           >
-            <label htmlFor="admin-password" className="sr-only">
-              Password
-            </label>
             <input
-              id="admin-password"
               type="password"
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full min-h-[48px] px-4 rounded-xl bg-black border border-white/10 text-white placeholder:text-white/40 transition-premium focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/20"
-              autoComplete="current-password"
+              className="w-full min-h-[48px] px-4 rounded-xl bg-black border border-white/10 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/30"
               autoFocus
             />
+
             <button
               type="submit"
-              className="w-full min-h-[48px] rounded-xl bg-white text-black font-semibold hover:opacity-90 transition-premium focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+              className="w-full min-h-[48px] rounded-xl bg-white text-black font-semibold hover:opacity-90 transition"
             >
               Continue
             </button>
@@ -161,6 +157,8 @@ export default function AdminPage() {
     (r) => r.status === "confirmed" && r.date >= today
   );
   const past = filtered.filter((r) => r.date < today);
+
+  /* ================= UI ================= */
 
   return (
     <main className="min-h-screen bg-black text-white">
@@ -206,6 +204,9 @@ export default function AdminPage() {
           </div>
           <WeeklyAnalytics reservations={reservations} />
         </div>
+
+        {/* ✅ TEMPLATE EDITOR (NOW ACTUALLY RENDERED) */}
+        <WhatsAppTemplateEditor />
 
         <ReservationList
           title="Today"
