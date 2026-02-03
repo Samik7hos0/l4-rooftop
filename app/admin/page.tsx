@@ -49,7 +49,8 @@ export default function AdminPage() {
   const [filter, setFilter] = useState<FilterType>("all");
   const [toolbarOpen, setToolbarOpen] = useState(false);
 
-  /* AUTH */
+  /* ================= AUTH ================= */
+
   function handleLogin() {
     if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
       setAuthorized(true);
@@ -58,13 +59,16 @@ export default function AdminPage() {
     }
   }
 
-  /* LOAD */
+  /* ================= LOAD ================= */
+
   async function loadReservations() {
     const res = await fetch("/api/reservations");
     const data: Reservation[] = await res.json();
+
     data.sort(
       (a, b) => +new Date(b.createdAt) - +new Date(a.createdAt)
     );
+
     setReservations(data);
   }
 
@@ -72,26 +76,30 @@ export default function AdminPage() {
     if (authorized) loadReservations();
   }, [authorized]);
 
-  /* ⌘K / CTRL+K */
+  /* ================= COMMAND PALETTE ================= */
+
   useEffect(() => {
     function handler(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         setToolbarOpen(true);
       }
+
+      if (e.key === "Escape") {
+        setToolbarOpen(false);
+      }
     }
+
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
-  /* LOGIN */
+  /* ================= LOGIN ================= */
+
   if (!authorized) {
     return (
-      <main
-        className="min-h-screen flex items-center justify-center bg-black text-white px-4"
-        role="main"
-      >
-        <div className="w-full max-w-sm bg-white/[0.04] backdrop-blur-xl p-6 sm:p-8 rounded-2xl border border-white/5">
+      <main className="min-h-screen flex items-center justify-center bg-black text-white px-4">
+        <div className="w-full max-w-sm bg-white/[0.04] backdrop-blur-xl p-6 sm:p-8 rounded-2xl border border-white/10">
           <h1 className="text-xl font-semibold mb-6 text-center tracking-tight">
             Admin Access
           </h1>
@@ -108,13 +116,30 @@ export default function AdminPage() {
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full min-h-[48px] px-4 rounded-xl bg-black border border-white/10 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/30"
               autoFocus
+              className="
+                w-full min-h-[48px]
+                px-4 rounded-xl
+                bg-black
+                border border-white/10
+                text-white
+                placeholder:text-white/40
+                focus:outline-none
+                focus:ring-2 focus:ring-white/30
+              "
             />
 
             <button
               type="submit"
-              className="w-full min-h-[48px] rounded-xl bg-white text-black font-semibold hover:opacity-90 transition"
+              className="
+                w-full min-h-[48px]
+                rounded-xl
+                bg-white
+                text-black
+                font-semibold
+                hover:opacity-90
+                transition-premium
+              "
             >
               Continue
             </button>
@@ -124,7 +149,8 @@ export default function AdminPage() {
     );
   }
 
-  /* FILTERING */
+  /* ================= FILTERING ================= */
+
   const today = new Date().toISOString().slice(0, 10);
 
   const filtered = reservations.filter((r) => {
@@ -162,8 +188,10 @@ export default function AdminPage() {
 
   return (
     <main className="min-h-screen bg-black text-white">
+      {/* Floating command trigger */}
       <ToolbarButton onOpen={() => setToolbarOpen(true)} />
 
+      {/* Command / filter palette */}
       <ToolbarModal
         open={toolbarOpen}
         onClose={() => setToolbarOpen(false)}
@@ -174,56 +202,76 @@ export default function AdminPage() {
       />
 
       <div className="max-w-7xl mx-auto px-6 md:px-16 py-16 space-y-24">
-        <FadeIn>
-          <header>
+        {/* Header */}
+        <FadeIn delay={0}>
+          <header className="space-y-2">
             <h1 className="text-3xl md:text-[44px] font-semibold tracking-tight">
               L4 Admin
             </h1>
-            <p className="text-white/50 mt-2">
-              Reservations & analytics overview
+            <p className="text-white/50">
+              Reservations & operational overview
             </p>
           </header>
         </FadeIn>
 
-        <InsightStrip
-          todayReservations={todayList}
-          pending={pending}
-          confirmed={confirmed}
-        />
+        {/* Insight strip */}
+        <FadeIn delay={80}>
+          <InsightStrip
+            todayReservations={todayList}
+            pending={pending}
+            confirmed={confirmed}
+          />
+        </FadeIn>
 
-        <KpiStrip
-          todayReservations={todayList}
-          pending={pending}
-          confirmed={confirmed}
-        />
+        {/* KPI strip */}
+        <FadeIn delay={140}>
+          <KpiStrip
+            todayReservations={todayList}
+            pending={pending}
+            confirmed={confirmed}
+          />
+        </FadeIn>
 
-        <div className="grid md:grid-cols-2 gap-16">
-          <div className="space-y-12">
-            <SlotHeatmap reservations={todayList} />
-            <TodaySummary reservations={todayList} />
+        {/* Charts */}
+        <FadeIn delay={200}>
+          <div className="grid md:grid-cols-2 gap-16">
+            <div className="space-y-12">
+              <SlotHeatmap reservations={todayList} />
+              <TodaySummary reservations={todayList} />
+            </div>
+
+            <WeeklyAnalytics reservations={reservations} />
           </div>
-          <WeeklyAnalytics reservations={reservations} />
-        </div>
+        </FadeIn>
 
-        {/* ✅ TEMPLATE EDITOR (NOW ACTUALLY RENDERED) */}
-        <WhatsAppTemplateEditor />
+        {/* WhatsApp template */}
+        <FadeIn delay={260}>
+          <WhatsAppTemplateEditor />
+        </FadeIn>
 
-        <ReservationList
-          title="Today"
-          reservations={todayList}
-          actionable
-          refresh={loadReservations}
-        />
+        {/* Lists */}
+        <FadeIn delay={320}>
+          <ReservationList
+            title="Today"
+            reservations={todayList}
+            actionable
+            refresh={loadReservations}
+          />
+        </FadeIn>
 
-        <ReservationList
-          title="Pending Review"
-          reservations={pending}
-          actionable
-          refresh={loadReservations}
-        />
+        <FadeIn delay={360}>
+          <ReservationList
+            title="Pending Review"
+            reservations={pending}
+            actionable
+            refresh={loadReservations}
+          />
+        </FadeIn>
 
-        <ReservationList title="Upcoming" reservations={confirmed} />
-        <ReservationList title="Past" reservations={past} />
+        <FadeIn delay={400}>
+          <ReservationList title="Upcoming" reservations={confirmed} />
+          <ReservationList title="Past" reservations={past} />
+        </FadeIn>
       </div>
     </main>
   );

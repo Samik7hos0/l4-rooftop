@@ -11,8 +11,8 @@ export default function FadeIn({
 }) {
   return (
     <div
-      style={{ animationDelay: `${delay}s` }}
-      className="fade-in"
+      className="opacity-0 translate-y-2 animate-fade-in"
+      style={{ animationDelay: `${delay}ms` }}
     >
       {children}
     </div>
