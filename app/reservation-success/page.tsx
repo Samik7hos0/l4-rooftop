@@ -153,10 +153,10 @@ export default function ReservationSuccessPage() {
               min-h-[48px]
               px-8
               rounded-xl
-              bg-white
-              text-black
+              bg-white/10
+              text-white
               font-semibold
-              hover:opacity-90
+              hover:bg-white/20
               hover:scale-[0.98]
               transition-premium
               focus-visible:ring-2
