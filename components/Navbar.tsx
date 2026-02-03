@@ -19,7 +19,7 @@ export default function Navbar() {
   return (
     <>
       {/* ================= DESKTOP ================= */}
-      <header className="fixed top-4 left-1/2 -translate-x-1/2 z-50 hidden md:block">
+      <header className="hidden md:flex justify-center pt-6">
         <nav
           className="
             flex items-center gap-6
@@ -62,8 +62,8 @@ export default function Navbar() {
       </header>
 
       {/* ================= MOBILE ================= */}
-      <header className="fixed top-0 inset-x-0 z-50 md:hidden">
-        <div className="flex items-center justify-between px-5 py-4 bg-black/80 backdrop-blur-xl border-b border-white/10">
+      <header className="md:hidden px-5 pt-5">
+        <div className="flex items-center justify-between px-4 py-3 bg-black/80 backdrop-blur-xl border border-white/10 rounded-xl">
           <Link href="/" className="text-sm font-medium text-white">
             L4 Rooftop
           </Link>
@@ -131,9 +131,6 @@ export default function Navbar() {
           </div>
         </div>
       )}
-
-      {/* Spacer */}
-      <div className="h-20 md:h-28" />
     </>
   );
 }
