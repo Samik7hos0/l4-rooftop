@@ -1,70 +1,96 @@
-export const metadata = {
-  title: "Contact & Location",
-  description:
-    "Find L4 Rooftop Restaurant in Dharmanagar. View location, timings and contact details.",
-};
-
-import ContactForm from "@/components/ContactForm";
-import MapEmbed from "@/components/MapEmbed";
+"use client";
 
 export default function ContactPage() {
   return (
-    <main
-      className="min-h-screen max-w-4xl mx-auto px-[var(--space-page-x)] py-12 sm:py-16 lg:py-20"
-      role="main"
-    >
-      <header className="mb-10 lg:mb-12">
-        <h1 className="text-3xl sm:text-4xl font-semibold text-[var(--primary)] tracking-tight">
-          Contact & Location
+    <main className="px-6 md:px-16 py-20 max-w-6xl mx-auto">
+      <header className="mb-16 max-w-2xl">
+        <h1 className="text-3xl md:text-5xl font-semibold tracking-tight">
+          Get in touch
         </h1>
-        <p className="mt-2 text-neutral-500 text-sm sm:text-base">
-          Get in touch or find us on the map
+        <p className="mt-3 text-white/50 text-lg">
+          We’re happy to help with reservations, events, and private dining.
         </p>
       </header>
 
-      <div className="grid lg:grid-cols-2 gap-12 lg:gap-16">
-        <section aria-labelledby="contact-details-heading">
-          <h2 id="contact-details-heading" className="sr-only">
-            Contact details
-          </h2>
-          <div className="space-y-4 text-neutral-400">
-            <p>
-              <span className="text-neutral-500">Address</span>
-              <br />
-              Power House Quarter Complex, Dharmanagar, Tripura 799250
-            </p>
-            <p>
-              <span className="text-neutral-500">Hours</span>
-              <br />
-              5:30 PM – 11:30 PM
-            </p>
-            <p>
-              <span className="text-neutral-500">Phone</span>
-              <br />
-              <a
-                href="tel:+917005227802"
-                className="text-[var(--primary)] hover:underline transition-premium focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded"
-              >
-                +91 70052 27802
-              </a>
-            </p>
-          </div>
-
-          <div className="mt-10">
-            <h3 className="text-sm font-medium text-neutral-400 mb-4">
-              Send a message
+      <section className="grid md:grid-cols-2 gap-16">
+        {/* INFO */}
+        <div className="space-y-8 text-white/80">
+          <div>
+            <h3 className="text-sm uppercase text-white/40 mb-1">
+              Address
             </h3>
-            <ContactForm />
+            <p>
+              Level Four Rooftop Restaurant<br />
+              Dharmanagar, Tripura
+            </p>
           </div>
-        </section>
 
-        <section aria-labelledby="map-heading" className="min-h-[280px]">
-          <h2 id="map-heading" className="sr-only">
-            Map
-          </h2>
-          <MapEmbed />
-        </section>
-      </div>
+          <div>
+            <h3 className="text-sm uppercase text-white/40 mb-1">
+              Phone
+            </h3>
+            <p>+91 9XXXXXXXXX</p>
+          </div>
+
+          <div>
+            <h3 className="text-sm uppercase text-white/40 mb-1">
+              Hours
+            </h3>
+            <p>12:00 PM – 11:00 PM</p>
+          </div>
+
+          <a
+            href="https://maps.app.goo.gl/7aKrNH3rgTmbieEx8"
+            target="_blank"
+            className="inline-block text-white underline underline-offset-4 hover:opacity-80"
+          >
+            View on Google Maps
+          </a>
+        </div>
+
+        {/* FORM */}
+        <form
+          className="
+            space-y-5
+            bg-white/[0.03]
+            border border-white/10
+            rounded-2xl
+            p-6 md:p-8
+          "
+        >
+          <input
+            type="text"
+            placeholder="Your name"
+            className="premium-input"
+            required
+          />
+          <input
+            type="email"
+            placeholder="Email address"
+            className="premium-input"
+            required
+          />
+          <textarea
+            placeholder="Your message"
+            rows={4}
+            className="premium-input resize-none"
+            required
+          />
+          <button
+            type="submit"
+            className="
+              w-full min-h-[48px]
+              rounded-xl
+              bg-white text-black
+              font-semibold
+              hover:opacity-90
+              transition
+            "
+          >
+            Send message
+          </button>
+        </form>
+      </section>
     </main>
   );
 }

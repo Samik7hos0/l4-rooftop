@@ -3,43 +3,50 @@
 import { useState } from "react";
 import { DayPicker } from "react-day-picker";
 import { format, startOfDay } from "date-fns";
-import { RESERVATION_TIME_SLOTS } from "@/lib/reservation";
 import "react-day-picker/dist/style.css";
 
-const GUEST_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
+/* ================= CONFIG ================= */
+
+const HOURS = ["12","1","2","3","4","5","6","7","8","9","10","11"];
+const MINUTES = Array.from({ length: 60 }, (_, i) => String(i + 1).padStart(2, "0"));
+const DEFAULT_GUESTS = [1,2,3,4,5,6,7,8,9,10];
+
+/* ================= PAGE ================= */
 
 export default function ReservationPage() {
+  const today = startOfDay(new Date());
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [date, setDate] = useState<Date | undefined>();
-  const [time, setTime] = useState("");
 
-  const today = startOfDay(new Date());
+  const [date, setDate] = useState<Date | undefined>();
+  const [hour, setHour] = useState("");
+  const [minute, setMinute] = useState("");
+  const [period, setPeriod] = useState<"AM" | "PM">("PM");
+
+  const [guests, setGuests] = useState<number | "more">(1);
+  const [customGuests, setCustomGuests] = useState<number>(11);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
 
-    if (!date) {
-      setError("Please select a date.");
-      return;
-    }
+    if (!date) return setError("Please select a date.");
+    if (!hour || !minute) return setError("Please select a valid time.");
 
-    if (!time) {
-      setError("Please select a time.");
-      return;
-    }
+    const guestCount = guests === "more" ? customGuests : guests;
 
     setLoading(true);
 
     const form = e.currentTarget;
     const formData = new FormData(form);
+
     const payload = {
       name: (formData.get("name") as string)?.trim(),
       phone: (formData.get("phone") as string)?.trim(),
       date: format(date, "yyyy-MM-dd"),
-      time,
-      guests: Number(formData.get("guests")),
+      time: `${hour}:${minute} ${period}`,
+      guests: guestCount,
       note: (formData.get("note") as string)?.trim() || "",
     };
 
@@ -50,167 +57,162 @@ export default function ReservationPage() {
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json().catch(() => ({}));
-
-      if (!res.ok) {
-        setError((data.error as string) || "Unable to place reservation. Please try again.");
-        setLoading(false);
-        return;
-      }
-
+      if (!res.ok) throw new Error();
       sessionStorage.setItem("reservation", JSON.stringify(payload));
       window.location.href = "/reservation-success";
     } catch {
-      setError("Something went wrong. Please try again.");
+      setError("Unable to place reservation. Please try again.");
+    } finally {
       setLoading(false);
     }
   }
 
-  const inputClass =
-    "w-full min-h-[44px] rounded-xl bg-neutral-950 border border-neutral-800 px-4 py-3 text-white placeholder:text-neutral-500 transition-premium focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2 focus:ring-offset-black focus:border-[var(--primary)]";
+  const input =
+    "w-full min-h-[44px] rounded-xl bg-neutral-950 border border-neutral-800 px-4 py-3 text-white placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-white/20";
 
   return (
-    <main
-      className="min-h-screen flex justify-center px-[var(--space-page-x)] py-12 sm:py-16 lg:py-20"
-      role="main"
-    >
+    <main className="min-h-screen bg-black flex justify-center px-6 py-16">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-xl space-y-6 bg-neutral-900/80 border border-neutral-800 p-6 sm:p-8 rounded-2xl"
-        aria-label="Reservation form"
-        noValidate
+        className="w-full max-w-xl bg-neutral-900/80 border border-neutral-800 rounded-3xl p-8 space-y-6"
       >
-        <header className="text-center">
-          <h1 className="text-2xl sm:text-3xl font-semibold text-white tracking-tight">
+        {/* HEADER */}
+        <header className="text-center space-y-1">
+          <h1 className="text-3xl font-semibold tracking-tight">
             Reserve a Table
           </h1>
-          <p className="mt-1 text-sm text-neutral-500">
-            Open 5:30 PM – 11:30 PM
+          <p className="text-sm text-neutral-400">
+            Open 12:00 PM – 11:00 PM
           </p>
         </header>
 
         {error && (
-          <p
-            className="text-sm text-red-400 text-center py-2 px-3 rounded-lg bg-red-500/10"
-            role="alert"
-          >
+          <p className="text-sm text-red-400 text-center bg-red-500/10 rounded-lg py-2">
             {error}
           </p>
         )}
 
-        <div>
-          <label htmlFor="res-name" className="premium-label">
-            Full Name
-          </label>
-          <input
-            id="res-name"
-            name="name"
-            type="text"
-            required
-            autoComplete="name"
-            placeholder="Your name"
-            className={inputClass}
-            disabled={loading}
-          />
-        </div>
+        {/* NAME */}
+        <Field label="Full Name">
+          <input name="name" required placeholder="Your name" className={input} />
+        </Field>
 
-        <div>
-          <label htmlFor="res-phone" className="premium-label">
-            Phone Number
-          </label>
-          <input
-            id="res-phone"
-            name="phone"
-            type="tel"
-            required
-            autoComplete="tel"
-            placeholder="10-digit mobile number"
-            className={inputClass}
-            disabled={loading}
-          />
-        </div>
+        {/* PHONE */}
+        <Field label="Phone Number">
+          <input name="phone" required placeholder="10-digit mobile number" className={input} />
+        </Field>
 
-        <div>
-          <label className="premium-label">Date</label>
-          <div className="rounded-xl border border-neutral-800 bg-neutral-950 p-3 [&_.rdp]:mx-auto">
+        {/* DATE */}
+        <Field label="Date">
+          <div className="rounded-xl border border-neutral-800 bg-neutral-950 p-3">
             <DayPicker
               mode="single"
               selected={date}
               onSelect={setDate}
               disabled={{ before: today }}
               fromMonth={today}
-              aria-label="Pick a date"
             />
           </div>
-        </div>
+        </Field>
 
-        <div>
-          <label htmlFor="res-time" className="premium-label">
-            Time
-          </label>
-          <select
-            id="res-time"
-            name="time"
-            required
-            value={time}
-            onChange={(e) => setTime(e.target.value)}
-            className={inputClass}
-            disabled={loading}
-            aria-describedby="res-time-hint"
-          >
-            <option value="">Select time</option>
-            {RESERVATION_TIME_SLOTS.map((slot) => (
-              <option key={slot.value} value={slot.value}>
-                {slot.label}
-              </option>
-            ))}
-          </select>
-          <p id="res-time-hint" className="sr-only">
-            Restaurant is open 5:30 PM to 11:00 PM
+        {/* TIME */}
+        <Field label="Time">
+          <div className="grid grid-cols-3 gap-3">
+            <select value={hour} onChange={(e)=>setHour(e.target.value)} className={input}>
+              <option value="">Hour</option>
+              {HOURS.map(h => <option key={h} value={h}>{h}</option>)}
+            </select>
+
+            <select value={minute} onChange={(e)=>setMinute(e.target.value)} className={input}>
+              <option value="">Min</option>
+              {MINUTES.map(m => <option key={m} value={m}>{m}</option>)}
+            </select>
+
+            {/* AM / PM TOGGLE */}
+            <div className="flex rounded-xl overflow-hidden border border-neutral-800">
+              {(["AM","PM"] as const).map(p => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setPeriod(p)}
+                  className={`flex-1 py-3 text-sm font-medium transition
+                    ${period === p
+                      ? "bg-white text-black"
+                      : "bg-neutral-950 text-white/60 hover:bg-neutral-900"}
+                  `}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <p className="text-xs text-neutral-500 mt-1">
+            Restaurant hours: 12 PM – 11 PM
           </p>
-        </div>
+        </Field>
 
-        <div>
-          <label htmlFor="res-guests" className="premium-label">
-            Number of Guests
-          </label>
+        {/* GUESTS */}
+        <Field label="Guests">
           <select
-            id="res-guests"
-            name="guests"
-            required
-            className={inputClass}
-            disabled={loading}
+            value={guests}
+            onChange={(e) =>
+              setGuests(e.target.value === "more" ? "more" : Number(e.target.value))
+            }
+            className={input}
           >
-            {GUEST_OPTIONS.map((n) => (
-              <option key={n} value={n}>
-                {n} {n === 1 ? "Guest" : "Guests"}
-              </option>
+            {DEFAULT_GUESTS.map(n => (
+              <option key={n} value={n}>{n} {n === 1 ? "Guest" : "Guests"}</option>
             ))}
+            <option value="more">10+ Guests</option>
           </select>
-        </div>
 
-        <div>
-          <label htmlFor="res-note" className="premium-label">
-            Special request <span className="text-neutral-600">(optional)</span>
-          </label>
+          {guests === "more" && (
+            <input
+              type="number"
+              min={11}
+              value={customGuests}
+              onChange={(e)=>setCustomGuests(Number(e.target.value))}
+              className={`${input} mt-3`}
+              placeholder="Enter guest count"
+            />
+          )}
+        </Field>
+
+        {/* NOTE */}
+        <Field label="Special Request (optional)">
           <textarea
-            id="res-note"
             name="note"
             rows={3}
-            placeholder="Dietary needs, occasion, etc."
-            className={`${inputClass} min-h-[100px] resize-y`}
-            disabled={loading}
+            placeholder="Birthday, window seat, allergies…"
+            className={`${input} resize-none`}
           />
-        </div>
+        </Field>
 
+        {/* SUBMIT */}
         <button
           type="submit"
           disabled={loading}
-          className="w-full min-h-[48px] rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] font-semibold hover:opacity-90 transition-premium focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-black disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full min-h-[48px] rounded-xl bg-white text-black font-semibold hover:opacity-90 transition disabled:opacity-50"
         >
           {loading ? "Booking…" : "Confirm Reservation"}
         </button>
+
+        <p className="text-xs text-neutral-500 text-center">
+          You’ll receive confirmation before arrival.
+        </p>
       </form>
     </main>
+  );
+}
+
+/* ================= FIELD ================= */
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-2">
+      <label className="text-sm text-neutral-400">{label}</label>
+      {children}
+    </div>
   );
 }

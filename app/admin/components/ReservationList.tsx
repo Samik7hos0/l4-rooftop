@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Reservation } from "../page";
 
 type Props = {
@@ -9,43 +10,69 @@ type Props = {
   refresh?: () => void;
 };
 
+const FALLBACK_TEMPLATE = `Hello {{name}}, your reservation at L4 Rooftop is confirmed.
+
+📅 {{date}}
+⏰ {{time}}
+👥 Guests: {{guests}}
+
+{{note}}`;
+
 export default function ReservationList({
   title,
   reservations,
   actionable,
   refresh,
 }: Props) {
-  async function confirmReservation(r: Reservation) {
-    if (r.notified) {
-      refresh?.();
-      return;
-    }
-    if (
-      !window.confirm(
-        `Send WhatsApp confirmation to ${r.name}?\n\nThis will send a message.`
-      )
-    )
-      return;
+  const [preview, setPreview] = useState<Reservation | null>(null);
+  const [sending, setSending] = useState(false);
+
+  /* ================= TEMPLATE ================= */
+
+  function buildMessage(r: Reservation) {
+    const template =
+      localStorage.getItem("wa_template") || FALLBACK_TEMPLATE;
+
+    return template
+      .replace("{{name}}", r.name)
+      .replace("{{date}}", r.date)
+      .replace("{{time}}", r.time)
+      .replace("{{guests}}", String(r.guests))
+      .replace("{{note}}", r.note || "");
+  }
+
+  /* ================= CONFIRM FLOW ================= */
+
+  async function sendConfirmation(r: Reservation) {
+    if (r.notified) return;
+
+    setSending(true);
 
     const res = await fetch("/api/reservations", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: r._id }),
+      body: JSON.stringify({
+        id: r._id,
+        status: "confirmed",
+        notified: true,
+      }),
     });
 
     if (res.ok) {
-      const msg = encodeURIComponent(
-        `Hello ${r.name}, your reservation at L4 Rooftop is confirmed.\n\n${r.date} • ${r.time}\nGuests: ${r.guests}${
-          r.note ? `\nRequest: ${r.note}` : ""
-        }`
+      const message = buildMessage(r);
+      window.open(
+        `https://wa.me/91${r.phone}?text=${encodeURIComponent(message)}`,
+        "_blank"
       );
-      window.open(`https://wa.me/91${r.phone}?text=${msg}`, "_blank");
       refresh?.();
     }
+
+    setSending(false);
+    setPreview(null);
   }
 
   async function deleteReservation(id: string) {
-    if (!window.confirm("Delete reservation?")) return;
+    if (!window.confirm("Delete this reservation?")) return;
 
     const res = await fetch("/api/reservations", {
       method: "DELETE",
@@ -55,6 +82,8 @@ export default function ReservationList({
 
     if (res.ok) refresh?.();
   }
+
+  /* ================= UI ================= */
 
   return (
     <section className="space-y-4">
@@ -74,14 +103,16 @@ export default function ReservationList({
               group flex justify-between items-center
               px-4 py-4 rounded-xl
               border border-white/5
-              bg-white/[0.01]
-              transition-premium
+              bg-white/[0.02]
               hover:bg-white/[0.05]
-              hover:border-white/10
+              transition
             "
           >
+            {/* INFO */}
             <div className="space-y-1">
-              <p className="text-[15px] font-medium">{r.name}</p>
+              <p className="text-[15px] font-medium text-white">
+                {r.name}
+              </p>
               <p className="text-[13px] text-white/50">
                 {r.date} · {r.time} · {r.guests} guests
               </p>
@@ -92,21 +123,33 @@ export default function ReservationList({
               )}
             </div>
 
+            {/* ACTIONS */}
             {actionable && (
-              <div className="flex gap-2 sm:gap-4 shrink-0">
+              <div className="flex gap-3 shrink-0">
                 <button
                   type="button"
-                  onClick={() => confirmReservation(r)}
-                  className="min-h-[44px] min-w-[44px] sm:min-w-0 sm:px-4 inline-flex items-center justify-center rounded-lg text-[13px] font-medium text-white/70 hover:text-green-400 transition-premium focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-                  aria-label={`Confirm reservation for ${r.name}`}
+                  disabled={r.notified}
+                  onClick={() => setPreview(r)}
+                  className={`
+                    min-h-[40px] px-4 rounded-lg text-[13px] font-medium
+                    transition
+                    ${
+                      r.notified
+                        ? "text-green-400 cursor-default"
+                        : "text-white/70 hover:text-green-400"
+                    }
+                  `}
                 >
-                  Confirm
+                  {r.notified ? "Sent" : "Confirm"}
                 </button>
+
                 <button
                   type="button"
                   onClick={() => deleteReservation(r._id)}
-                  className="min-h-[44px] min-w-[44px] sm:min-w-0 sm:px-4 inline-flex items-center justify-center rounded-lg text-[13px] text-white/50 hover:text-red-400 transition-premium focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-                  aria-label={`Delete reservation for ${r.name}`}
+                  className="
+                    min-h-[40px] px-4 rounded-lg text-[13px]
+                    text-white/50 hover:text-red-400 transition
+                  "
                 >
                   Delete
                 </button>
@@ -115,6 +158,75 @@ export default function ReservationList({
           </div>
         ))}
       </div>
+
+      {/* ================= PREVIEW MODAL ================= */}
+
+      {preview && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
+          onClick={() => !sending && setPreview(null)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="
+              w-[92%] max-w-md
+              rounded-2xl
+              bg-neutral-900
+              border border-neutral-800
+              p-6 space-y-4
+            "
+          >
+            <h3 className="text-lg font-semibold">
+              Send WhatsApp Confirmation
+            </h3>
+
+            <div className="text-sm space-y-1 text-white/80">
+              <p><strong>Name:</strong> {preview.name}</p>
+              <p><strong>Date:</strong> {preview.date}</p>
+              <p><strong>Time:</strong> {preview.time}</p>
+              <p><strong>Guests:</strong> {preview.guests}</p>
+              {preview.note && (
+                <p><strong>Note:</strong> {preview.note}</p>
+              )}
+            </div>
+
+            <div className="bg-neutral-950 border border-neutral-800 rounded-lg p-3 text-xs text-white/70 whitespace-pre-wrap">
+              {buildMessage(preview)}
+            </div>
+
+            <p className="text-xs text-white/50">
+              This message will be sent once and cannot be undone.
+            </p>
+
+            <div className="flex gap-3 pt-4">
+              <button
+                onClick={() => setPreview(null)}
+                disabled={sending}
+                className="
+                  flex-1 py-2 rounded-lg
+                  bg-white/10 text-white/70
+                  hover:bg-white/20 transition
+                "
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={() => sendConfirmation(preview)}
+                disabled={sending}
+                className="
+                  flex-1 py-2 rounded-lg
+                  bg-green-500 text-black font-semibold
+                  hover:opacity-90 transition
+                  disabled:opacity-50
+                "
+              >
+                {sending ? "Sending…" : "Send WhatsApp"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
