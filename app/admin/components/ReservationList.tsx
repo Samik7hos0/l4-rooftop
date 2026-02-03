@@ -26,6 +26,7 @@ export default function ReservationList({
 }: Props) {
   const [preview, setPreview] = useState<Reservation | null>(null);
   const [sending, setSending] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
 
   /* ================= TEMPLATE ================= */
 
@@ -60,11 +61,16 @@ export default function ReservationList({
 
     if (res.ok) {
       const message = buildMessage(r);
+
       window.open(
         `https://wa.me/91${r.phone}?text=${encodeURIComponent(message)}`,
         "_blank"
       );
+
       refresh?.();
+
+      setToast("WhatsApp confirmation sent");
+      setTimeout(() => setToast(null), 2400);
     }
 
     setSending(false);
@@ -86,7 +92,7 @@ export default function ReservationList({
   /* ================= UI ================= */
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-4 relative">
       <h2 className="text-sm uppercase tracking-wide text-white/40">
         {title}
       </h2>
@@ -99,14 +105,18 @@ export default function ReservationList({
         {reservations.map((r) => (
           <div
             key={r._id}
-            className="
+            className={`
               group flex justify-between items-center
               px-4 py-4 rounded-xl
               border border-white/5
               bg-white/[0.02]
-              hover:bg-white/[0.05]
               transition
-            "
+              ${
+                r.status === "pending"
+                  ? "animate-pulse-soft border-amber-400/30"
+                  : "hover:bg-red/[0.05]"
+              }
+            `}
           >
             {/* INFO */}
             <div className="space-y-1">
@@ -225,6 +235,23 @@ export default function ReservationList({
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ================= TOAST ================= */}
+
+      {toast && (
+        <div
+          className="
+            fixed bottom-6 right-6 z-50
+            px-5 py-3 rounded-xl
+            bg-white text-black
+            text-sm font-medium
+            shadow-xl
+            animate-fade-in
+          "
+        >
+          {toast}
         </div>
       )}
     </section>
