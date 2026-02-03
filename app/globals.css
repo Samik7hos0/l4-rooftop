@@ -69,7 +69,7 @@ h6 {
   line-height: 1.12;
 }
 
-/* Paragraphs — more breathable */
+/* Paragraphs — breathable but confident */
 p {
   line-height: 1.75;
   color: var(--muted-1);
@@ -82,7 +82,10 @@ small,
   color: var(--muted-2);
 }
 
-/* Lists — visible markers on dark background */
+/* =====================================
+   Lists (clean on dark backgrounds)
+   ===================================== */
+
 ul,
 ol {
   padding-left: 1.25em;
@@ -98,7 +101,7 @@ ol {
 
 ul::marker,
 ol::marker {
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.45);
 }
 
 li {
@@ -106,12 +109,12 @@ li {
 }
 
 /* =====================================
-   Links (subtle, confident)
+   Links (subtle, premium)
    ===================================== */
 
 a {
   color: inherit;
-  text-decoration-thickness: 1px;
+  text-decoration: none;
   text-underline-offset: 3px;
 }
 
@@ -192,7 +195,18 @@ select:focus {
   border-radius: var(--radius-lg);
 }
 
-/* 🔥 Apple-style glass blur */
+/* =====================================
+   Apple-style Glass / Navbar helpers
+   ===================================== */
+
+/* 🔥 Stable glass for navbar & overlays */
+.nav-glass {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: saturate(180%) blur(18px);
+  -webkit-backdrop-filter: saturate(180%) blur(18px);
+}
+
+/* Generic glass utility */
 .backdrop-blur-xl {
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);

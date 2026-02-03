@@ -8,35 +8,52 @@ export default function HomePage() {
       {/* ================= HERO ================= */}
       <section className="min-h-[100vh] flex items-center justify-center px-6">
         <div className="max-w-4xl text-center space-y-8">
-          <p className="text-sm tracking-widest text-white/50 uppercase">
+          <p className="text-xs tracking-[0.3em] text-white/50 uppercase">
             Rooftop Dining • Nightlife • Experiences
           </p>
 
           <h1 className="text-4xl md:text-6xl font-semibold tracking-tight">
             L4 Rooftop
             <br />
-            <span className="text-white/70">
+            <span className="text-white/60">
               Where evenings feel elevated
             </span>
           </h1>
 
-          <p className="max-w-2xl mx-auto text-lg text-white/70">
+          <p className="max-w-2xl mx-auto text-lg text-white/65">
             A premium rooftop destination blending cuisine, skyline views,
             curated music, and an atmosphere designed for unforgettable
             nights.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+          {/* CTA */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
             <Link
               href="/reservation"
-              className="px-8 py-3 rounded-full bg-white text-black font-medium hover:bg-white/90 transition"
+              className="
+                inline-flex items-center justify-center
+                px-8 py-3 rounded-full
+                bg-white/10 text-white font-medium
+                border border-white/15
+                backdrop-blur
+                hover:bg-white/15
+                transition-premium
+              "
             >
               Reserve a Table
             </Link>
 
             <Link
               href="/menu"
-              className="px-8 py-3 rounded-full border border-white/20 text-white hover:bg-white/10 transition"
+              className="
+                inline-flex items-center justify-center
+                px-8 py-3 rounded-full
+                border border-white/15
+                text-white/70
+                hover:text-white
+                hover:bg-white/5
+                transition-premium
+              "
             >
               View Menu
             </Link>
@@ -52,13 +69,13 @@ export default function HomePage() {
               Crafted for nights that matter
             </h2>
 
-            <p className="text-white/70 text-lg">
+            <p className="text-white/65 text-lg">
               L4 Rooftop is more than a restaurant. It’s a space designed
               for connection — from intimate dinners to lively group
               celebrations.
             </p>
 
-            <ul className="space-y-3 text-white/70">
+            <ul className="space-y-3 text-white/65">
               <li>• Curated rooftop ambience</li>
               <li>• Signature cocktails & global cuisine</li>
               <li>• Live DJ & themed nights</li>
@@ -66,16 +83,16 @@ export default function HomePage() {
             </ul>
           </div>
 
-          <div className="rounded-3xl bg-white/[0.04] border border-white/10 p-10 space-y-6">
+          <div className="rounded-3xl bg-white/[0.035] border border-white/10 p-10 space-y-6">
             <div>
-              <p className="text-sm text-white/50 uppercase tracking-wide">
+              <p className="text-xs text-white/50 uppercase tracking-wide">
                 Timings
               </p>
               <p className="text-lg">5:30 PM – 12:30 AM</p>
             </div>
 
             <div>
-              <p className="text-sm text-white/50 uppercase tracking-wide">
+              <p className="text-xs text-white/50 uppercase tracking-wide">
                 Best For
               </p>
               <p className="text-lg">
@@ -84,7 +101,7 @@ export default function HomePage() {
             </div>
 
             <div>
-              <p className="text-sm text-white/50 uppercase tracking-wide">
+              <p className="text-xs text-white/50 uppercase tracking-wide">
                 Location
               </p>
               <p className="text-lg">
@@ -125,31 +142,38 @@ export default function HomePage() {
             ].map((item) => (
               <div
                 key={item.title}
-                className="rounded-2xl bg-white/[0.04] border border-white/10 p-8 space-y-3"
+                className="rounded-2xl bg-white/[0.035] border border-white/10 p-8 space-y-3"
               >
                 <h3 className="text-xl font-medium">{item.title}</h3>
-                <p className="text-white/70">{item.desc}</p>
+                <p className="text-white/65">{item.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ================= CTA ================= */}
+      {/* ================= FINAL CTA ================= */}
       <section className="py-32 px-6 border-t border-white/5">
         <div className="max-w-3xl mx-auto text-center space-y-8">
           <h2 className="text-3xl md:text-4xl font-semibold tracking-tight">
             Ready for your next evening out?
           </h2>
 
-          <p className="text-white/70 text-lg">
+          <p className="text-white/65 text-lg">
             Tables fill quickly on peak nights. Reserve in advance to
             ensure the perfect experience.
           </p>
 
           <Link
             href="/reservation"
-            className="inline-block px-10 py-4 rounded-full bg-white text-black font-medium hover:bg-white/90 transition"
+            className="
+              inline-flex items-center justify-center
+              px-10 py-4 rounded-full
+              bg-white/10 text-white font-medium
+              border border-white/15
+              hover:bg-white/15
+              transition-premium
+            "
           >
             Book Your Table
           </Link>

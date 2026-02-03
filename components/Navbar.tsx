@@ -18,89 +18,59 @@ export default function Navbar() {
 
   return (
     <>
-      {/* ================= DESKTOP NAV ================= */}
-      <header className="fixed top-0 inset-x-0 z-50 hidden md:block">
+      {/* ================= DESKTOP ================= */}
+      <header className="fixed top-4 left-1/2 -translate-x-1/2 z-50 hidden md:block">
         <nav
           className="
-            mx-auto max-w-7xl
-            mt-4
-            px-6
+            flex items-center gap-6
+            px-6 py-3
+            rounded-full
+            bg-black/60
+            backdrop-blur-xl
+            border border-white/10
           "
         >
-          <div
-            className="
-              flex items-center justify-between
-              rounded-full
-              bg-black/80
-              backdrop-blur-xl
-              border border-white/10
-              shadow-[0_4px_24px_rgba(0,0,0,0.4)]
-              px-6 py-3
-            "
-          >
-            {/* Brand */}
-            <Link
-              href="/"
-              className="text-sm font-semibold tracking-tight text-white"
-            >
-              L4 Rooftop
-            </Link>
+          <span className="text-sm font-medium text-white">
+            L4 Rooftop
+          </span>
 
-            {/* Nav Items */}
-            <div className="flex items-center gap-2">
-              {NAV_ITEMS.map((item) => {
-                const active = pathname === item.href;
+          <ul className="flex items-center gap-1 text-sm">
+            {NAV_ITEMS.map((item) => {
+              const active = pathname === item.href;
 
-                return (
+              return (
+                <li key={item.href}>
                   <Link
-                    key={item.href}
                     href={item.href}
                     className={`
-                      px-4 py-2 rounded-full text-sm
+                      px-4 py-1.5 rounded-full
                       transition-premium
                       ${
                         active
-                          ? "bg-white/10 text-white"
-                          : "text-white/70 hover:text-white hover:bg-white/5"
+                          ? "bg-white/15 text-white"
+                          : "text-white/70 hover:bg-white/10 hover:text-white"
                       }
                     `}
                   >
                     {item.label}
                   </Link>
-                );
-              })}
-            </div>
-          </div>
+                </li>
+              );
+            })}
+          </ul>
         </nav>
       </header>
 
-      {/* ================= MOBILE NAV ================= */}
+      {/* ================= MOBILE ================= */}
       <header className="fixed top-0 inset-x-0 z-50 md:hidden">
-        <div
-          className="
-            flex items-center justify-between
-            px-5 py-4
-            bg-black/90 backdrop-blur-xl
-            border-b border-white/10
-          "
-        >
-          <Link
-            href="/"
-            className="text-sm font-semibold tracking-tight text-white"
-          >
+        <div className="flex items-center justify-between px-5 py-4 bg-black/80 backdrop-blur-xl border-b border-white/10">
+          <Link href="/" className="text-sm font-medium text-white">
             L4 Rooftop
           </Link>
 
           <button
             onClick={() => setOpen(true)}
-            aria-label="Open menu"
-            className="
-              rounded-lg
-              px-3 py-2
-              text-white/80
-              hover:bg-white/10
-              transition
-            "
+            className="px-3 py-2 rounded-lg text-white/70 hover:bg-white/10"
           >
             ☰
           </button>
@@ -110,7 +80,7 @@ export default function Navbar() {
       {/* ================= MOBILE DRAWER ================= */}
       {open && (
         <div
-          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm"
+          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm"
           onClick={() => setOpen(false)}
         >
           <div
@@ -121,12 +91,11 @@ export default function Navbar() {
               rounded-2xl
               bg-black
               border border-white/10
-              p-6
-              space-y-4
+              p-6 space-y-4
             "
           >
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-white/70">Menu</span>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-white/60">Menu</span>
               <button
                 onClick={() => setOpen(false)}
                 className="text-white/60 hover:text-white"
@@ -149,8 +118,8 @@ export default function Navbar() {
                       transition-premium
                       ${
                         active
-                          ? "bg-white/10 text-white"
-                          : "text-white/70 hover:text-white hover:bg-white/5"
+                          ? "bg-white/15 text-white"
+                          : "text-white/70 hover:bg-white/10 hover:text-white"
                       }
                     `}
                   >
@@ -163,7 +132,7 @@ export default function Navbar() {
         </div>
       )}
 
-      {/* Spacer so content doesn’t hide under navbar */}
+      {/* Spacer */}
       <div className="h-20 md:h-28" />
     </>
   );
