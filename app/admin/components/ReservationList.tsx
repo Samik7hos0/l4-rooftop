@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Reservation } from "../page";
 
 type Props = {
@@ -8,6 +8,7 @@ type Props = {
   reservations: Reservation[];
   actionable?: boolean;
   refresh?: () => void;
+  onModalChange?: (open: boolean) => void;
 };
 
 const FALLBACK_TEMPLATE = `Hello {{name}}, your reservation at L4 Rooftop is confirmed.
@@ -23,6 +24,7 @@ export default function ReservationList({
   reservations,
   actionable,
   refresh,
+  onModalChange,
 }: Props) {
   const [preview, setPreview] = useState<Reservation | null>(null);
   const [sending, setSending] = useState(false);
@@ -45,36 +47,42 @@ export default function ReservationList({
   /* ================= CONFIRM FLOW ================= */
 
   async function sendConfirmation(r: Reservation) {
-    if (r.notified) return;
+    if (r.notified || sending) return;
 
     setSending(true);
 
-    const res = await fetch("/api/reservations", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        id: r._id,
-        status: "confirmed",
-        notified: true,
-      }),
-    });
+    try {
+      const res = await fetch("/api/reservations", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: r._id,
+          status: "confirmed",
+          notified: true,
+        }),
+      });
 
-    if (res.ok) {
+      if (!res.ok) throw new Error();
+
       const message = buildMessage(r);
 
       window.open(
         `https://wa.me/91${r.phone}?text=${encodeURIComponent(message)}`,
-        "_blank"
+        "_blank",
+        "noopener,noreferrer"
       );
 
       refresh?.();
 
       setToast("WhatsApp confirmation sent");
       setTimeout(() => setToast(null), 2400);
-    }
 
-    setSending(false);
-    setPreview(null);
+      setPreview(null);
+    } catch {
+      alert("Failed to send WhatsApp confirmation.");
+    } finally {
+      setSending(false);
+    }
   }
 
   async function deleteReservation(id: string) {
@@ -88,6 +96,28 @@ export default function ReservationList({
 
     if (res.ok) refresh?.();
   }
+
+  /* ================= MODAL LOCK ================= */
+
+  useEffect(() => {
+    onModalChange?.(!!preview);
+  }, [preview, onModalChange]);
+
+  /* ================= ESC CLOSE ================= */
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape" && !sending) {
+        setPreview(null);
+      }
+    }
+
+    if (preview) {
+      window.addEventListener("keydown", onKey);
+    }
+
+    return () => window.removeEventListener("keydown", onKey);
+  }, [preview, sending]);
 
   /* ================= UI ================= */
 
@@ -114,7 +144,7 @@ export default function ReservationList({
               ${
                 r.status === "pending"
                   ? "animate-pulse-soft border-amber-400/30"
-                  : "hover:bg-red/[0.05]"
+                  : "hover:bg-white/[0.05]"
               }
             `}
           >
@@ -172,67 +202,77 @@ export default function ReservationList({
       {/* ================= PREVIEW MODAL ================= */}
 
       {preview && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
-          onClick={() => !sending && setPreview(null)}
-        >
+        <div className="fixed inset-0 z-[100]">
+          {/* BACKDROP */}
           <div
-            onClick={(e) => e.stopPropagation()}
-            className="
-              w-[92%] max-w-md
-              rounded-2xl
-              bg-neutral-900
-              border border-neutral-800
-              p-6 space-y-4
-            "
-          >
-            <h3 className="text-lg font-semibold">
-              Send WhatsApp Confirmation
-            </h3>
+            className="absolute inset-0 bg-black/70"
+            onClick={() => !sending && setPreview(null)}
+          />
 
-            <div className="text-sm space-y-1 text-white/80">
-              <p><strong>Name:</strong> {preview.name}</p>
-              <p><strong>Date:</strong> {preview.date}</p>
-              <p><strong>Time:</strong> {preview.time}</p>
-              <p><strong>Guests:</strong> {preview.guests}</p>
-              {preview.note && (
-                <p><strong>Note:</strong> {preview.note}</p>
-              )}
-            </div>
+          {/* MODAL */}
+          <div className="relative z-[101] flex items-center justify-center min-h-screen px-4">
+            <div
+              className="
+                w-full max-w-md
+                rounded-2xl
+                bg-neutral-900
+                border border-neutral-800
+                p-6 space-y-4
+                motion motion-1
+                pointer-events-auto
+              "
+            >
+              <h3 className="text-lg font-semibold">
+                Send WhatsApp Confirmation
+              </h3>
 
-            <div className="bg-neutral-950 border border-neutral-800 rounded-lg p-3 text-xs text-white/70 whitespace-pre-wrap">
-              {buildMessage(preview)}
-            </div>
+              <div className="text-sm space-y-1 text-white/80">
+                <p><strong>Name:</strong> {preview.name}</p>
+                <p><strong>Date:</strong> {preview.date}</p>
+                <p><strong>Time:</strong> {preview.time}</p>
+                <p><strong>Guests:</strong> {preview.guests}</p>
+                {preview.note && (
+                  <p><strong>Note:</strong> {preview.note}</p>
+                )}
+              </div>
 
-            <p className="text-xs text-white/50">
-              This message will be sent once and cannot be undone.
-            </p>
+              <div className="bg-neutral-950 border border-neutral-800 rounded-lg p-3 text-xs text-white/70 whitespace-pre-wrap">
+                {buildMessage(preview)}
+              </div>
 
-            <div className="flex gap-3 pt-4">
-              <button
-                onClick={() => setPreview(null)}
-                disabled={sending}
-                className="
-                  flex-1 py-2 rounded-lg
-                  bg-white/10 text-white/70
-                  hover:bg-white/20 transition
-                "
-              >
-                Cancel
-              </button>
+              <p className="text-xs text-white/50">
+                This message will be sent once and cannot be undone.
+              </p>
 
-              <button
-                onClick={() => sendConfirmation(preview)}
-                disabled={sending}
-                className="
-                  flex-1 py-2 rounded-lg
-                  bg-green-500 text-black font-semibold
-                  hover:opacity-90 transition
-                  disabled:opacity-50
-                "
-              >
-                {sending ? "Sending…" : "Send WhatsApp"}
-              </button>
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setPreview(null)}
+                  disabled={sending}
+                  className="
+                    flex-1 py-2 rounded-lg
+                    bg-white/10 text-white/70
+                    hover:bg-white/20 transition
+                    disabled:opacity-40
+                  "
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => sendConfirmation(preview)}
+                  disabled={sending}
+                  className="
+                    flex-1 py-2 rounded-lg
+                    bg-green-500 text-black font-semibold
+                    hover:opacity-90 transition
+                    disabled:opacity-50
+                  "
+                >
+                  {sending ? "Sending…" : "Send WhatsApp"}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -243,7 +283,7 @@ export default function ReservationList({
       {toast && (
         <div
           className="
-            fixed bottom-6 right-6 z-50
+            fixed bottom-6 right-6 z-[110]
             px-5 py-3 rounded-xl
             bg-white text-black
             text-sm font-medium

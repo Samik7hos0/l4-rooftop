@@ -406,3 +406,18 @@ select:focus {
 .animate-pulse-soft {
   animation: pulse-soft 2.4s ease-in-out infinite;
 }
+
+@keyframes select-pop {
+  from {
+    transform: scale(0.96);
+    background-color: rgba(255,255,255,0.08);
+  }
+  to {
+    transform: scale(1);
+    background-color: rgba(255,255,255,0.15);
+  }
+}
+
+.dropdown-selected {
+  animation: select-pop 160ms cubic-bezier(0.22, 1, 0.36, 1);
+}

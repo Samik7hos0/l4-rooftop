@@ -3,15 +3,17 @@
 import { useState } from "react";
 import { DayPicker } from "react-day-picker";
 import { format, startOfDay } from "date-fns";
+import Dropdown from "@/components/Dropdown";
 import "react-day-picker/dist/style.css";
 
 /* ================= CONFIG ================= */
 
-const HOURS = ["12","1","2","3","4","5","6","7","8","9","10","11"];
+const HOURS = ["12","1","2","3","4","5","6","7","8","9","10"];
 const MINUTES = Array.from({ length: 60 }, (_, i) =>
-  String(i + 1).padStart(2, "0")
+  String(i).padStart(2, "0")
 );
-const DEFAULT_GUESTS = [1,2,3,4,5,6,7,8,9,10];
+
+const GUESTS = Array.from({ length: 10 }, (_, i) => i + 1);
 
 /* ================= PAGE ================= */
 
@@ -22,44 +24,35 @@ export default function ReservationPage() {
   const [error, setError] = useState("");
 
   const [date, setDate] = useState<Date | undefined>();
-  const [hour, setHour] = useState("");
-  const [minute, setMinute] = useState("");
-  const [period, setPeriod] = useState<"AM" | "PM">("PM");
-
-  const [guests, setGuests] = useState<number | "more">(1);
+  const [hour, setHour] = useState<string | null>(null);
+  const [minute, setMinute] = useState<string | null>(null);
+  const [guests, setGuests] = useState<number | null>(1);
   const [customGuests, setCustomGuests] = useState(11);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
 
-    if (!date) return setError("Please select a date.");
-    if (!hour || !minute) return setError("Please select a valid time.");
-
-    const guestCount = guests === "more" ? customGuests : guests;
-
-    setLoading(true);
-
-    const formData = new FormData(e.currentTarget);
+    if (!date || !hour || !minute || !guests)
+      return setError("Please complete all required fields.");
 
     const payload = {
-      name: String(formData.get("name")).trim(),
-      phone: String(formData.get("phone")).trim(),
+      name: String(new FormData(e.currentTarget).get("name")).trim(),
+      phone: String(new FormData(e.currentTarget).get("phone")).trim(),
       date: format(date, "yyyy-MM-dd"),
-      time: `${hour}:${minute} ${period}`,
-      guests: guestCount,
-      note: String(formData.get("note") || "").trim(),
+      time: `${hour}:${minute} PM`,
+      guests: guests === -1 ? customGuests : guests,
+      note: String(new FormData(e.currentTarget).get("note") || "").trim(),
     };
 
     try {
+      setLoading(true);
       const res = await fetch("/api/reservations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
       if (!res.ok) throw new Error();
-
       sessionStorage.setItem("reservation", JSON.stringify(payload));
       window.location.href = "/reservation-success";
     } catch {
@@ -84,7 +77,7 @@ export default function ReservationPage() {
             Reserve a Table
           </h1>
           <p className="motion motion-1 text-sm text-neutral-400">
-            Open 12:00 PM – 11:00 PM
+            Open 12:00 PM – 10:00 PM
           </p>
         </header>
 
@@ -101,12 +94,7 @@ export default function ReservationPage() {
 
         {/* PHONE */}
         <Field label="Phone Number">
-          <input
-            name="phone"
-            required
-            placeholder="10-digit mobile number"
-            className={input}
-          />
+          <input name="phone" required placeholder="10-digit mobile number" className={input} />
         </Field>
 
         {/* DATE */}
@@ -122,64 +110,48 @@ export default function ReservationPage() {
           </div>
         </Field>
 
-        {/* TIME */}
-        <Field label="Time">
-          <div className="grid grid-cols-3 gap-3">
-            <select value={hour} onChange={(e)=>setHour(e.target.value)} className={input}>
-              <option value="">Hour</option>
-              {HOURS.map(h => <option key={h} value={h}>{h}</option>)}
-            </select>
-
-            <select value={minute} onChange={(e)=>setMinute(e.target.value)} className={input}>
-              <option value="">Min</option>
-              {MINUTES.map(m => <option key={m} value={m}>{m}</option>)}
-            </select>
-
-            {/* AM / PM TOGGLE */}
-            <div className="flex rounded-xl overflow-hidden border border-neutral-800">
-              {(["AM","PM"] as const).map(p => (
-                <button
-                  key={p}
-                  type="button"
-                  onClick={() => setPeriod(p)}
-                  className={`flex-1 py-3 text-sm font-medium transition-premium
-                    ${period === p
-                      ? "bg-white text-black"
-                      : "bg-neutral-950 text-white/60 hover:bg-neutral-900"}
-                  `}
-                >
-                  {p}
-                </button>
-              ))}
-            </div>
+        {/* TIME (PM ONLY) */}
+        <Field label="Time (PM only)">
+          <div className="grid grid-cols-2 gap-3">
+            <Dropdown
+              value={hour}
+              onChange={setHour}
+              placeholder="Hour"
+              options={HOURS.map(h => ({ label: h, value: h }))}
+            />
+            <Dropdown
+              value={minute}
+              onChange={setMinute}
+              placeholder="Minute"
+              options={MINUTES.map(m => ({ label: m, value: m }))}
+            />
           </div>
-
           <p className="text-xs text-neutral-500 mt-1">
-            Restaurant hours: 12 PM – 11 PM
+            All reservations are PM only
           </p>
         </Field>
 
         {/* GUESTS */}
         <Field label="Guests">
-          <select
+          <Dropdown
             value={guests}
-            onChange={(e) =>
-              setGuests(e.target.value === "more" ? "more" : Number(e.target.value))
-            }
-            className={input}
-          >
-            {DEFAULT_GUESTS.map(n => (
-              <option key={n} value={n}>{n} {n === 1 ? "Guest" : "Guests"}</option>
-            ))}
-            <option value="more">10+ Guests</option>
-          </select>
+            onChange={setGuests}
+            placeholder="Select guests"
+            options={[
+              ...GUESTS.map(n => ({
+                label: `${n} ${n === 1 ? "Guest" : "Guests"}`,
+                value: n,
+              })),
+              { label: "10+ Guests", value: -1 },
+            ]}
+          />
 
-          {guests === "more" && (
+          {guests === -1 && (
             <input
               type="number"
               min={11}
               value={customGuests}
-              onChange={(e)=>setCustomGuests(Number(e.target.value))}
+              onChange={(e) => setCustomGuests(Number(e.target.value))}
               className={`${input} mt-3`}
               placeholder="Enter guest count"
             />
