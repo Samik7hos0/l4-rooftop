@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Reservation } from "../page";
 
 type Props = {
@@ -29,6 +30,12 @@ export default function ReservationList({
   const [preview, setPreview] = useState<Reservation | null>(null);
   const [sending, setSending] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  /* ================= MOUNT (for portal) ================= */
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   /* ================= TEMPLATE ================= */
 
@@ -97,13 +104,11 @@ export default function ReservationList({
     if (res.ok) refresh?.();
   }
 
-  /* ================= MODAL LOCK ================= */
+  /* ================= MODAL STATE ================= */
 
   useEffect(() => {
     onModalChange?.(!!preview);
   }, [preview, onModalChange]);
-
-  /* ================= ESC CLOSE ================= */
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -112,10 +117,7 @@ export default function ReservationList({
       }
     }
 
-    if (preview) {
-      window.addEventListener("keydown", onKey);
-    }
-
+    if (preview) window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [preview, sending]);
 
@@ -199,91 +201,95 @@ export default function ReservationList({
         ))}
       </div>
 
-      {/* ================= PREVIEW MODAL ================= */}
+      {/* ================= MODAL (PORTAL) ================= */}
 
-      {preview && (
-        <div className="fixed inset-0 z-[100]">
-          {/* BACKDROP */}
-          <div
-            className="absolute inset-0 bg-black/70"
-            onClick={() => !sending && setPreview(null)}
-          />
-
-          {/* MODAL */}
-          <div className="relative z-[101] flex items-center justify-center min-h-screen px-4">
+      {mounted &&
+        preview &&
+        createPortal(
+          <div className="fixed inset-0 z-[9999] pointer-events-none">
+            {/* Backdrop */}
             <div
-              className="
-                w-full max-w-md
-                rounded-2xl
-                bg-neutral-900
-                border border-neutral-800
-                p-6 space-y-4
-                motion motion-1
-                pointer-events-auto
-              "
-            >
-              <h3 className="text-lg font-semibold">
-                Send WhatsApp Confirmation
-              </h3>
+              className="absolute inset-0 bg-black/60 backdrop-blur-md pointer-events-auto"
+              onClick={() => !sending && setPreview(null)}
+            />
 
-              <div className="text-sm space-y-1 text-white/80">
-                <p><strong>Name:</strong> {preview.name}</p>
-                <p><strong>Date:</strong> {preview.date}</p>
-                <p><strong>Time:</strong> {preview.time}</p>
-                <p><strong>Guests:</strong> {preview.guests}</p>
-                {preview.note && (
-                  <p><strong>Note:</strong> {preview.note}</p>
-                )}
-              </div>
+            {/* Modal */}
+            <div className="absolute inset-0 flex items-center justify-center px-4 pointer-events-none">
+              <div
+                className="
+                  w-full max-w-md
+                  rounded-2xl
+                  bg-neutral-900/90
+                  backdrop-blur-xl
+                  border border-neutral-800
+                  p-6 space-y-4
+                  pointer-events-auto
+                  motion motion-1
+                "
+              >
+                <h3 className="text-lg font-semibold">
+                  Send WhatsApp Confirmation
+                </h3>
 
-              <div className="bg-neutral-950 border border-neutral-800 rounded-lg p-3 text-xs text-white/70 whitespace-pre-wrap">
-                {buildMessage(preview)}
-              </div>
+                <div className="text-sm space-y-1 text-white/80">
+                  <p><strong>Name:</strong> {preview.name}</p>
+                  <p><strong>Date:</strong> {preview.date}</p>
+                  <p><strong>Time:</strong> {preview.time}</p>
+                  <p><strong>Guests:</strong> {preview.guests}</p>
+                  {preview.note && (
+                    <p><strong>Note:</strong> {preview.note}</p>
+                  )}
+                </div>
 
-              <p className="text-xs text-white/50">
-                This message will be sent once and cannot be undone.
-              </p>
+                <div className="bg-neutral-950 border border-neutral-800 rounded-lg p-3 text-xs text-white/70 whitespace-pre-wrap">
+                  {buildMessage(preview)}
+                </div>
 
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setPreview(null)}
-                  disabled={sending}
-                  className="
-                    flex-1 py-2 rounded-lg
-                    bg-white/10 text-white/70
-                    hover:bg-white/20 transition
-                    disabled:opacity-40
-                  "
-                >
-                  Cancel
-                </button>
+                <p className="text-xs text-white/50">
+                  This message will be sent once and cannot be undone.
+                </p>
 
-                <button
-                  type="button"
-                  onClick={() => sendConfirmation(preview)}
-                  disabled={sending}
-                  className="
-                    flex-1 py-2 rounded-lg
-                    bg-green-500 text-black font-semibold
-                    hover:opacity-90 transition
-                    disabled:opacity-50
-                  "
-                >
-                  {sending ? "Sending…" : "Send WhatsApp"}
-                </button>
+                <div className="flex gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setPreview(null)}
+                    disabled={sending}
+                    className="
+                      flex-1 py-2 rounded-lg
+                      bg-white/10 text-white/70
+                      hover:bg-white/20 transition
+                      disabled:opacity-40
+                    "
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => sendConfirmation(preview)}
+                    disabled={sending}
+                    className="
+                      flex-1 py-2 rounded-lg
+                      bg-green-500 text-black font-semibold
+                      hover:opacity-90 transition
+                      disabled:opacity-50
+                    "
+                  >
+                    {sending ? "Sending…" : "Send WhatsApp"}
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
 
       {/* ================= TOAST ================= */}
 
       {toast && (
         <div
           className="
-            fixed bottom-6 right-6 z-[110]
+            fixed bottom-6 right-6 z-[10000]
             px-5 py-3 rounded-xl
             bg-white text-black
             text-sm font-medium
