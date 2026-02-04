@@ -32,6 +32,9 @@ export default function ReservationList({
   const [toast, setToast] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
 
+  /* ===== INLINE EDIT STATE ===== */
+  const [draft, setDraft] = useState("");
+
   /* ===== BULK STATE ===== */
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
@@ -53,6 +56,14 @@ export default function ReservationList({
       .replace("{{guests}}", String(r.guests))
       .replace("{{note}}", r.note || "");
   }
+
+  /* ================= LOAD DRAFT ================= */
+
+  useEffect(() => {
+    if (preview) {
+      setDraft(buildMessage(preview));
+    }
+  }, [preview]);
 
   /* ================= SELECTION ================= */
 
@@ -91,7 +102,7 @@ export default function ReservationList({
 
       window.open(
         `https://wa.me/91${r.phone}?text=${encodeURIComponent(
-          buildMessage(r)
+          draft || buildMessage(r)
         )}`,
         "_blank",
         "noopener,noreferrer"
@@ -262,176 +273,115 @@ export default function ReservationList({
         })}
       </div>
 
-      {/* ================= BULK BAR (PORTAL) ================= */}
+      {/* ================= MODAL (PORTAL) ================= */}
 
       {mounted &&
-        selected.size > 0 &&
+        preview &&
         createPortal(
-          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9000] pointer-events-none">
+          <div className="fixed inset-0 z-[9999] pointer-events-none">
             <div
-              className="
-                pointer-events-auto
-                flex items-center gap-6
-                px-6 py-3 rounded-full
-                bg-black/65 backdrop-blur-xl
-                border border-white/10
-                shadow-xl
-              "
-            >
-              <span className="text-sm text-white/80">
-                {selected.size} selected
-              </span>
+              className="absolute inset-0 bg-black/60 backdrop-blur-md pointer-events-auto"
+              onClick={() => !sending && setPreview(null)}
+            />
 
-              <button
-                onClick={bulkConfirm}
-                className="text-sm text-green-400 hover:underline"
+            <div className="absolute inset-0 flex items-center justify-center px-4 pointer-events-none">
+              <div
+                className="
+                  w-full max-w-md
+                  rounded-3xl
+                  bg-neutral-900/90
+                  backdrop-blur-xl
+                  border border-white/10
+                  p-6 space-y-6
+                  pointer-events-auto
+                  motion motion-1
+                "
               >
-                Confirm all
-              </button>
+                {/* HEADER */}
+                <div className="space-y-1">
+                  <h3 className="text-lg font-semibold text-white">
+                    Confirm WhatsApp Message
+                  </h3>
+                  <p className="text-xs text-white/50">
+                    Review or edit before sending
+                  </p>
+                </div>
 
-              <button
-                onClick={bulkDelete}
-                className="text-sm text-red-400 hover:underline"
-              >
-                Delete
-              </button>
+                {/* SUMMARY */}
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-white/40 text-xs">Guest</p>
+                    <p className="text-white font-medium">{preview.name}</p>
+                  </div>
+                  <div>
+                    <p className="text-white/40 text-xs">Guests</p>
+                    <p className="text-white font-medium">{preview.guests}</p>
+                  </div>
+                  <div>
+                    <p className="text-white/40 text-xs">Date</p>
+                    <p className="text-white font-medium">{preview.date}</p>
+                  </div>
+                  <div>
+                    <p className="text-white/40 text-xs">Time</p>
+                    <p className="text-white font-medium">{preview.time}</p>
+                  </div>
+                </div>
 
-              <button
-                onClick={() => setSelected(new Set())}
-                className="text-sm text-white/50 hover:text-white"
-              >
-                Clear
-              </button>
+                {/* INLINE EDITOR */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-white/50">
+                      WhatsApp message
+                    </p>
+                    {draft !== buildMessage(preview) && (
+                      <span className="text-[11px] text-amber-400">
+                        Edited
+                      </span>
+                    )}
+                  </div>
+
+                  <textarea
+                    value={draft}
+                    onChange={(e) => setDraft(e.target.value)}
+                    rows={6}
+                    className="
+                      w-full
+                      rounded-2xl
+                      bg-neutral-950
+                      border border-neutral-800
+                      p-4
+                      text-xs
+                      text-white/80
+                      resize-none
+                      focus:outline-none
+                      focus:ring-2 focus:ring-white/20
+                    "
+                  />
+                </div>
+
+                {/* ACTIONS */}
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={() => setPreview(null)}
+                    disabled={sending}
+                    className="flex-1 py-2.5 rounded-xl bg-white/10 text-white/70 hover:bg-white/20"
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    onClick={() => sendConfirmation(preview)}
+                    disabled={sending}
+                    className="flex-1 py-2.5 rounded-xl bg-green-500 text-black font-semibold hover:opacity-90"
+                  >
+                    {sending ? "Sending…" : "Send WhatsApp"}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>,
           document.body
         )}
-
-      {/* ================= MODAL (PORTAL) ================= */}
-
-      {mounted &&
-  preview &&
-  createPortal(
-    <div className="fixed inset-0 z-[9999] pointer-events-none">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-md pointer-events-auto"
-        onClick={() => !sending && setPreview(null)}
-      />
-
-      {/* Modal */}
-      <div className="absolute inset-0 flex items-center justify-center px-4 pointer-events-none">
-        <div
-          className="
-            w-full max-w-md
-            rounded-3xl
-            bg-neutral-900/90
-            backdrop-blur-xl
-            border border-white/10
-            p-6 space-y-6
-            pointer-events-auto
-            motion motion-1
-          "
-        >
-          {/* HEADER */}
-          <div className="space-y-1">
-            <h3 className="text-lg font-semibold text-white">
-              Confirm WhatsApp Message
-            </h3>
-            <p className="text-xs text-white/50">
-              This will mark the reservation as confirmed
-            </p>
-          </div>
-
-          {/* SUMMARY STRIP */}
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <p className="text-white/40 text-xs">Guest</p>
-              <p className="text-white font-medium">
-                {preview.name}
-              </p>
-            </div>
-            <div>
-              <p className="text-white/40 text-xs">Guests</p>
-              <p className="text-white font-medium">
-                {preview.guests}
-              </p>
-            </div>
-            <div>
-              <p className="text-white/40 text-xs">Date</p>
-              <p className="text-white font-medium">
-                {preview.date}
-              </p>
-            </div>
-            <div>
-              <p className="text-white/40 text-xs">Time</p>
-              <p className="text-white font-medium">
-                {preview.time}
-              </p>
-            </div>
-          </div>
-
-          {/* MESSAGE PREVIEW */}
-          <div className="space-y-2">
-            <p className="text-xs text-white/50">
-              WhatsApp message preview
-            </p>
-            <div
-              className="
-                rounded-2xl
-                bg-neutral-950
-                border border-neutral-800
-                p-4
-                text-xs
-                text-white/80
-                whitespace-pre-wrap
-              "
-            >
-              {buildMessage(preview)}
-            </div>
-          </div>
-
-          {/* NOTE */}
-          <p className="text-[11px] text-white/40">
-            This action cannot be undone.
-          </p>
-
-          {/* ACTIONS */}
-          <div className="flex gap-3 pt-2">
-            <button
-              type="button"
-              onClick={() => setPreview(null)}
-              disabled={sending}
-              className="
-                flex-1 py-2.5 rounded-xl
-                bg-white/10 text-white/70
-                hover:bg-white/20 transition
-                disabled:opacity-40
-              "
-            >
-              Cancel
-            </button>
-
-            <button
-              type="button"
-              onClick={() => sendConfirmation(preview)}
-              disabled={sending}
-              className="
-                flex-1 py-2.5 rounded-xl
-                bg-green-500 text-black font-semibold
-                hover:opacity-90 transition
-                disabled:opacity-50
-              "
-            >
-              {sending ? "Sending…" : "Send WhatsApp"}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>,
-    document.body
-  )}
-
 
       {/* ================= TOAST ================= */}
 
