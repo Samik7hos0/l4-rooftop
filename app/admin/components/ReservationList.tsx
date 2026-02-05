@@ -273,6 +273,89 @@ export default function ReservationList({
         })}
       </div>
 
+     {/* ================= BULK ACTION BAR ================= */}
+
+{mounted &&
+  actionable &&
+  selected.size > 0 &&
+  createPortal(
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9000] pointer-events-none">
+      <div
+        className="
+          pointer-events-auto
+          flex items-center gap-2
+          px-3 py-2
+          rounded-full
+          bg-neutral-900/80
+          backdrop-blur-2xl
+          border border-white/10
+          shadow-[0_20px_60px_rgba(0,0,0,0.6)]
+          animate-slide-up
+        "
+      >
+        {/* COUNT PILL */}
+        <span
+          className="
+            px-3 py-1.5
+            rounded-full
+            text-xs font-medium
+            text-white/90
+            bg-white/10
+          "
+        >
+          {selected.size} selected
+        </span>
+
+        {/* DIVIDER */}
+        <span className="w-px h-5 bg-white/10 mx-1" />
+
+        {/* CONFIRM */}
+        <button
+          onClick={bulkConfirm}
+          className="
+            px-4 py-1.5 rounded-full
+            text-xs font-medium
+            text-emerald-400
+            hover:bg-emerald-400/10
+            transition
+          "
+        >
+          Confirm
+        </button>
+
+        {/* DELETE */}
+        <button
+          onClick={bulkDelete}
+          className="
+            px-4 py-1.5 rounded-full
+            text-xs font-medium
+            text-red-400
+            hover:bg-red-400/10
+            transition
+          "
+        >
+          Delete
+        </button>
+
+        {/* CLEAR */}
+        <button
+          onClick={() => setSelected(new Set())}
+          className="
+            px-3 py-1.5 rounded-full
+            text-xs font-medium
+            text-white/50
+            hover:text-white
+            hover:bg-white/10
+            transition
+          "
+        >
+          Clear
+        </button>
+      </div>
+    </div>,
+    document.body
+  )}
+
       {/* ================= MODAL (PORTAL) ================= */}
 
       {mounted &&
