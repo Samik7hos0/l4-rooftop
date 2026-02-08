@@ -25,7 +25,7 @@ export default function Navbar() {
   const lastScroll = useRef(0);
   const idleTimer = useRef<NodeJS.Timeout | null>(null);
 
-  /* ================= SCROLL AWARE ================= */
+  /* ================= SCROLL AWARE (DESKTOP) ================= */
   useEffect(() => {
     const onScroll = () => {
       const y = window.scrollY;
@@ -74,7 +74,7 @@ export default function Navbar() {
     setExpanded(true);
   }
 
-  /* ================= MAGNETIC ================= */
+  /* ================= MAGNETIC (DESKTOP) ================= */
   function onMouseMove(
     e: React.MouseEvent<HTMLAnchorElement, MouseEvent>
   ) {
@@ -95,7 +95,7 @@ export default function Navbar() {
 
   return (
     <>
-      {/* ================= DESKTOP ================= */}
+      {/* ================= DESKTOP (UNCHANGED) ================= */}
       <header
         className={`
           hidden md:flex fixed top-0 inset-x-0 z-50 justify-center
@@ -121,7 +121,6 @@ export default function Navbar() {
             ${expanded ? "hover:px-9 hover:py-4" : ""}
           `}
         >
-          {/* BRAND */}
           <Link
             href="/"
             className="text-sm font-semibold text-white tracking-wide pr-2"
@@ -129,12 +128,7 @@ export default function Navbar() {
             L4
           </Link>
 
-          {/* NAV ITEMS */}
-          <ul
-            ref={navRef}
-            className="flex items-center gap-1 relative"
-          >
-            {/* SLIDING UNDERLINE — ONLY WHEN EXPANDED */}
+          <ul ref={navRef} className="flex items-center gap-1 relative">
             {expanded && activeRect && navRef.current && (
               <span
                 className="absolute bottom-0 h-[2px] rounded-full bg-white transition-all duration-300"
@@ -186,38 +180,65 @@ export default function Navbar() {
         </nav>
       </header>
 
-      {/* ================= MOBILE ================= */}
-      <header className="md:hidden fixed top-0 inset-x-0 z-50 px-5 pt-4">
-        <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-black/80 backdrop-blur-xl border border-white/10 shadow-lg">
+      {/* ================= MOBILE BAR ================= */}
+      <header className="md:hidden fixed top-0 inset-x-0 z-50 px-4 pt-4">
+        <div
+          className="
+            flex items-center justify-between
+            px-4 py-3
+            rounded-2xl
+            bg-black/70
+            backdrop-blur-2xl
+            border border-white/10
+            shadow-[0_10px_40px_rgba(0,0,0,0.55)]
+            transition
+          "
+        >
           <Link href="/" className="text-sm font-semibold text-white">
             L4 Rooftop
           </Link>
 
           <button
             onClick={() => setOpen(true)}
-            className="px-3 py-2 rounded-lg text-white/70 hover:bg-white/10"
+            className="
+              px-3 py-2 rounded-xl
+              text-white/70
+              hover:bg-white/10
+              active:scale-95
+              transition
+            "
+            aria-label="Open menu"
           >
             ☰
           </button>
         </div>
       </header>
 
-      {/* ================= MOBILE DRAWER ================= */}
+      {/* ================= MOBILE SHEET ================= */}
       {open && (
         <div
-          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm"
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md"
           onClick={() => setOpen(false)}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="absolute right-4 top-4 w-[88%] max-w-sm rounded-2xl bg-black border border-white/10 p-6 space-y-4"
+            className="
+              absolute bottom-0 inset-x-0
+              rounded-t-3xl
+              bg-neutral-900/95
+              backdrop-blur-2xl
+              border-t border-white/10
+              px-6 pt-6 pb-10
+              space-y-6
+              animate-slide-up
+            "
           >
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-white/60">Menu</span>
-              <button onClick={() => setOpen(false)}>✕</button>
+            {/* HANDLE */}
+            <div className="flex justify-center">
+              <span className="w-10 h-1.5 rounded-full bg-white/20" />
             </div>
 
-            <nav className="flex flex-col gap-1">
+            <nav className="flex flex-col gap-2">
               {NAV_ITEMS.map((item) => {
                 const active = pathname === item.href;
 
@@ -226,17 +247,37 @@ export default function Navbar() {
                     key={item.href}
                     href={item.href}
                     onClick={() => setOpen(false)}
-                    className={`px-4 py-3 rounded-xl text-sm ${
-                      active
-                        ? "bg-white/15 text-white"
-                        : "text-white/70 hover:bg-white/10 hover:text-white"
-                    }`}
+                    className={`
+                      px-5 py-4 rounded-2xl
+                      text-base font-medium
+                      transition
+                      ${
+                        active
+                          ? "bg-white/15 text-white shadow-inner"
+                          : "text-white/70 hover:bg-white/10 hover:text-white"
+                      }
+                    `}
                   >
                     {item.label}
                   </Link>
                 );
               })}
             </nav>
+
+            <button
+              onClick={() => setOpen(false)}
+              className="
+                w-full mt-2
+                py-3 rounded-2xl
+                text-sm font-medium
+                text-white/60
+                hover:text-white
+                hover:bg-white/10
+                transition
+              "
+            >
+              Close
+            </button>
           </div>
         </div>
       )}

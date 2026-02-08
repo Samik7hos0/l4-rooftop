@@ -47,7 +47,7 @@ export default function ContactPage() {
 
         {/* RIGHT: FORM */}
         <div className="motion motion-3">
-          <div className="card-premium p-8 md:p-10">
+          <div className="card-premium p-6 md:p-10">
             <h2 className="text-xl font-semibold mb-6">
               Send us a message
             </h2>
