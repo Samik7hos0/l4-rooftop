@@ -11,21 +11,20 @@ export default function L4Logo({ size = 96, animated = true }: Props) {
       className={`
         inline-flex items-center justify-center
         ${animated ? "animate-logo-in" : ""}
-        group
       `}
       style={{ width: size, height: size }}
     >
       <svg
-        width={size}
-        height={size}
-        viewBox="0 0 512 512"
+        viewBox="-16 -16 544 544"
+        width="100%"
+        height="100%"
         xmlns="http://www.w3.org/2000/svg"
+        preserveAspectRatio="xMidYMid meet"
         className="
           block
+          overflow-visible
           transition-transform duration-300
           ease-[cubic-bezier(0.22,1,0.36,1)]
-          group-hover:scale-[1.04]
-          group-hover:brightness-110
         "
         aria-hidden
       >
