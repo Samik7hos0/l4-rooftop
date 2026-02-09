@@ -196,6 +196,7 @@ export default function ReservationList({
           return (
             <div
               key={r._id}
+              data-reservation-id={r._id}
               className={`
                 flex items-center gap-4
                 px-4 py-4 rounded-xl
