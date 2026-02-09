@@ -3,6 +3,10 @@ import { connectDB } from "@/lib/db";
 import Reservation from "@/models/Reservation";
 import { sendReservationConfirmation } from "@/lib/whatsapp";
 
+/* 🔔 ADMIN LIVE NOTIFICATION */
+import { notifyAdmins } from "../notifications/route";
+import { notifyAdmins as notifyAdminStream } from "@/lib/admin-notification-stream";
+
 const SLOT_CAPACITY = 20;
 const MAX_GUESTS = 20;
 const MIN_GUESTS = 1;
@@ -29,16 +33,28 @@ function validatePostBody(body: unknown): {
   note: string;
 } | null {
   if (!body || typeof body !== "object") return null;
+
   const b = body as Record<string, unknown>;
+
   const name = typeof b.name === "string" ? b.name.trim() : "";
-  const phone = typeof b.phone === "string" ? b.phone.trim().replace(/\s/g, "") : "";
+  const phone =
+    typeof b.phone === "string"
+      ? b.phone.trim().replace(/\s/g, "")
+      : "";
   const date = typeof b.date === "string" ? b.date.trim() : "";
   const time = typeof b.time === "string" ? b.time.trim() : "";
-  const guests = typeof b.guests === "number" ? b.guests : Number(b.guests);
-  const note = typeof b.note === "string" ? b.note.trim() : typeof b.specialRequest === "string" ? b.specialRequest.trim() : "";
+  const guests =
+    typeof b.guests === "number" ? b.guests : Number(b.guests);
+  const note =
+    typeof b.note === "string"
+      ? b.note.trim()
+      : typeof b.specialRequest === "string"
+      ? b.specialRequest.trim()
+      : "";
 
   if (!name || !phone || !date || !time) return null;
-  if (!Number.isInteger(guests) || guests < MIN_GUESTS || guests > MAX_GUESTS) return null;
+  if (!Number.isInteger(guests) || guests < MIN_GUESTS || guests > MAX_GUESTS)
+    return null;
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return null;
 
   return { name, phone, date, time, guests, note };
@@ -48,7 +64,9 @@ function validatePostBody(body: unknown): {
 export async function GET() {
   try {
     await connectDB();
-    const reservations = await Reservation.find().sort({ createdAt: -1 }).lean();
+    const reservations = await Reservation.find()
+      .sort({ createdAt: -1 })
+      .lean();
     return NextResponse.json(reservations);
   } catch (err) {
     console.error("[reservations GET]", err);
@@ -63,14 +81,20 @@ export async function POST(req: Request) {
 
     const raw = await req.json().catch(() => null);
     const payload = validatePostBody(raw);
+
     if (!payload) {
-      return badRequest("Missing or invalid fields: name, phone, date, time, and guests (1–20) required.");
+      return badRequest(
+        "Missing or invalid fields: name, phone, date, time, guests (1–20)."
+      );
     }
 
     const { name, phone, date, time, guests, note } = payload;
 
     const existing = await Reservation.find({ date, time }).lean();
-    const totalGuests = existing.reduce((sum, r) => sum + (r.guests ?? 0), 0);
+    const totalGuests = existing.reduce(
+      (sum, r) => sum + (r.guests ?? 0),
+      0
+    );
 
     if (totalGuests + guests > SLOT_CAPACITY) {
       return NextResponse.json(
@@ -95,6 +119,18 @@ export async function POST(req: Request) {
       status: autoConfirm ? "confirmed" : "pending",
     });
 
+    /* 🔔 INSTANT ADMIN NOTIFICATION */
+    notifyAdmins({
+      type: "new-reservation",
+      id: reservation._id,
+      name,
+      guests,
+      date,
+      time,
+      status: reservation.status,
+    });
+    notifyAdminStream({ name, date, time, guests, status: reservation.status });
+
     if (autoConfirm) {
       try {
         await sendReservationConfirmation({
@@ -105,7 +141,10 @@ export async function POST(req: Request) {
           guests,
         });
       } catch (e) {
-        console.error("[reservations POST] WhatsApp send failed", e);
+        console.error(
+          "[reservations POST] WhatsApp send failed",
+          e
+        );
       }
     }
 
@@ -119,20 +158,24 @@ export async function POST(req: Request) {
   }
 }
 
-/** PATCH – confirm reservation (idempotent: safe to call multiple times) */
+/** PATCH – confirm reservation */
 export async function PATCH(req: Request) {
   try {
     await connectDB();
 
     const body = await req.json().catch(() => ({}));
     const id = typeof body.id === "string" ? body.id.trim() : "";
+
     if (!id) return badRequest("Missing reservation id.");
 
     const reservation = await Reservation.findById(id).lean();
     if (!reservation) return notFound("Reservation not found.");
 
     if (reservation.status === "confirmed") {
-      return NextResponse.json({ success: true, alreadyConfirmed: true });
+      return NextResponse.json({
+        success: true,
+        alreadyConfirmed: true,
+      });
     }
 
     await Reservation.findByIdAndUpdate(id, {
@@ -149,7 +192,10 @@ export async function PATCH(req: Request) {
         guests: reservation.guests,
       });
     } catch (e) {
-      console.error("[reservations PATCH] WhatsApp send failed", e);
+      console.error(
+        "[reservations PATCH] WhatsApp send failed",
+        e
+      );
     }
 
     return NextResponse.json({ success: true });
@@ -159,13 +205,14 @@ export async function PATCH(req: Request) {
   }
 }
 
-/** DELETE – cancel/remove reservation */
+/** DELETE – remove reservation */
 export async function DELETE(req: Request) {
   try {
     await connectDB();
 
     const body = await req.json().catch(() => ({}));
     const id = typeof body.id === "string" ? body.id.trim() : "";
+
     if (!id) return badRequest("Missing reservation id.");
 
     const deleted = await Reservation.findByIdAndDelete(id);

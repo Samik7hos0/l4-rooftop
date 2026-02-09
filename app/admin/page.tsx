@@ -14,6 +14,9 @@ import ToolbarButton from "./components/ToolbarButton";
 import ToolbarModal from "./components/ToolbarModal";
 import WhatsAppTemplateEditor from "./components/WhatsAppTemplateEditor";
 
+/* 🔔 ADMIN NOTIFICATIONS */
+import AdminNotifications from "./components/AdminNotifications";
+
 /* ================= TYPES ================= */
 
 export type Reservation = {
@@ -188,6 +191,9 @@ export default function AdminPage() {
 
   return (
     <main className="min-h-screen bg-black text-white">
+      {/* 🔔 LIVE ADMIN NOTIFICATIONS */}
+      <AdminNotifications onRefresh={loadReservations} />
+
       {/* Floating command trigger */}
       <ToolbarButton onOpen={() => setToolbarOpen(true)} />
 
